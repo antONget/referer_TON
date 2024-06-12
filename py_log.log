@@ -1,0 +1,16 @@
+referer_bot.py:26 #INFO     [2024-06-12 19:50:47,232] - __main__ - Starting bot
+dispatcher.py:527 #INFO     [2024-06-12 19:50:47,404] - aiogram.dispatcher - Start polling
+dispatcher.py:341 #INFO     [2024-06-12 19:50:47,452] - aiogram.dispatcher - Run polling for bot @T_e_s_t_m_y_b_o_t_bot id=6689173506 - 'BOT_TestTest_1'
+keyboard_user.py:7 #INFO     [2024-06-12 19:50:49,627] - root - keyboards_subscription
+other_handlers.py:20 #INFO     [2024-06-12 19:50:49,723] - root - all_calback: 6663237590
+dispatcher.py:172 #INFO     [2024-06-12 19:50:49,723] - aiogram.event - Update id=130576838 is handled. Duration 296 ms by bot id=6689173506
+keyboard_user.py:7 #INFO     [2024-06-12 19:50:51,595] - root - keyboards_subscription
+other_handlers.py:26 #INFO     [2024-06-12 19:50:51,794] - root - all_message
+dispatcher.py:172 #INFO     [2024-06-12 19:50:51,794] - aiogram.event - Update id=130576839 is handled. Duration 250 ms by bot id=6689173506
+keyboard_user.py:7 #INFO     [2024-06-12 19:50:52,698] - root - keyboards_subscription
+other_handlers.py:20 #INFO     [2024-06-12 19:50:52,899] - root - all_calback: 6663237590
+dispatcher.py:172 #INFO     [2024-06-12 19:50:52,900] - aiogram.event - Update id=130576840 is handled. Duration 390 ms by bot id=6689173506
+handler_user.py:75 #INFO     [2024-06-12 19:51:06,987] - root - process_press_subscription: 6663237590
+handler_user.py:89 #INFO     [2024-06-12 19:51:06,987] - root - user_subscription: 6663237590
+keyboard_user.py:14 #INFO     [2024-06-12 19:51:06,987] - root - keyboards_main
+dispatcher.py:172 #INFO     [2024-06-12 19:51:07,062] - aiogram.event - Update id=130576841 is handled. Duration 125 ms by bot id=6689173506

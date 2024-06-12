@@ -1,113 +1,128 @@
-from aiocryptopay import AioCryptoPay, Networks
-from aiocryptopay.api import Assets, Balance, Check, Invoice
-
-# from settings.config import CRYPTO_TOKEN
-
-
-from asyncio import run
+from aiogram import Router, F, Bot
+from aiogram.types import Message, CallbackQuery, ChatMemberMember, ChatMemberAdministrator, ChatMemberOwner
+from aiogram.filters import CommandStart, Command, CommandObject
+from aiogram.utils.deep_linking import create_start_link, decode_payload
+from aiogram.filters import Filter
 
 
-
-CRYPTO_TOKEN = "14190:AA2b4nBwnFXoIMANNLS6kCvDAERb9Kh99Nq"
-
-CryptoHelper : AioCryptoPay = AioCryptoPay(token=CRYPTO_TOKEN, network=Networks.TEST_NET)
-
+from config_data.config import Config, load_config, bot
+from database.requests import add_user, get_balance, get_referral_users, get_referral_link
+from keyboards.keyboard_user import keyboards_subscription, keyboards_main
 
 
-async def pay_ton_to(user_id: int, amount: int | float):
-    await CryptoHelper.transfer(user_id=user_id, asset=Assets.TON, amount=amount,  spend_id=1029384756)  # method to send coins to user
-    await CryptoHelper.close()
+import logging
+import asyncio
 
 
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 
-""" ------------------------ FOR ADMINS ------------------------"""
-
-async def get_balance():
-    balance = await CryptoHelper.get_balance()
-    balance_ton = [i.available for i in balance if i.currency_code == Assets.TON][0]
-    await CryptoHelper.close()
-
-    return balance_ton
-
-async def get_stats():
-    stats = await CryptoHelper.get_stats()
-    await CryptoHelper.close()
-    s = f'''Оборот: ${stats.volume}\nКонверсия: {stats.conversion} %\n\nКоличество созданных счетов: {stats.created_invoice_count}\nКоличество оплат: {stats.paid_invoice_count}\nКоличество пользователей: {stats.unique_users_count}
-    '''
-
-    return s
-
-async def get_paid_invoices():
-    invoices = await CryptoHelper.get_invoices()
-    otv = 'Оплаченые инвойсы:\n\n'
-    for invoice in invoices:
-        if invoice.status == "paid":
-            otv += f'ID: {invoice.invoice_id}\nСумма: {invoice.amount} {invoice.asset}\nСозданно: {invoice.created_at.strftime("%d/%m/%Y; %H:%M:%S")}\nОплачено: {invoice.paid_at.strftime("%d/%m/%Y; %H:%M:%S")}\n\n'
-
-    await CryptoHelper.close()
-    return otv
+router = Router()
+user_dict = {}
+config: Config = load_config()
 
 
-async def create_check_link(amount: int | float, description = None | str):
-    check: Check = await CryptoHelper.create_check(amount=1, asset=Assets.TON, description=description)  # methos to make a check
-    await CryptoHelper.close()
-    return check.bot_check_url
+class User(StatesGroup):
+    username = State()
+
+class ChannelProtect(Filter):
+    async def __call__(self, message: Message):
+        u_status = await bot.get_chat_member(chat_id=-1002127624428, user_id=message.from_user.id)
+        if isinstance(u_status, ChatMemberMember) or isinstance(u_status, ChatMemberAdministrator) \
+            or isinstance(u_status, ChatMemberOwner) :
+            return True
+        if isinstance(message, CallbackQuery):
+            await message.answer('')
+            await message.message.answer(text=f'Чтобы получать вознаграждения за приглашенных пользователей, а самому найти'
+                                  f' вакансию своей мечты подпишись на канал'
+                                  f'<a href="{config.tg_bot.channel_name}">{config.tg_bot.channel_name}</a>',
+                             reply_markup=await keyboards_subscription(),
+                             parse_mode='html')
+        else:
+            await message.answer(text=f'Чтобы получать вознаграждения за приглашенных пользователей, а самому найти'
+                                  f' вакансию своей мечты подпишись на канал'
+                                  f'<a href="{config.tg_bot.channel_name}">{config.tg_bot.channel_name}</a>',
+                             reply_markup=await keyboards_subscription(),
+                             parse_mode='html')
+        return False
 
 
-async def create_invoice_link(amount: int | float):
-    invoice: Invoice = await CryptoHelper.create_invoice(amount=amount, asset=Assets.TON)  # methos to make a check
-    await CryptoHelper.close()
-    print(invoice)
-    return invoice.bot_invoice_url
-
-# print(run(create_invoice_link(2)))
-# print(run(create_check_link()))
+@router.message(Command('ref'))
+async def mt_referal_menu (message: Message, bot: Bot):
+    link = await get_referral_link(message.from_user.id)
+    await message.answer(text=f'{link}')
 
 
+@router.message(ChannelProtect(), CommandStart())
+async def process_start_command_user(message: Message,  command: CommandObject) -> None:
+    logging.info("process_start_command_user")
+    referer_id = 0
+    args = command.args
+    if args:
+        referer_id = decode_payload(args)
+        print(referer_id)
 
+    
+    link = await create_start_link(bot=bot, payload=str(message.from_user.id), encode=True)
 
-
-
-# print(run(get_paid_invoices())) 
-# async def 
-
-# print(run(get_stats()))
-# run(get_balance())
+    await add_user({"id":message.from_user.id, "username":message.from_user.username, "referral_link":link})
+    await user_subscription(message)
 
 
 
-async def f():
-    # profile = await CryptoHelper.get_me()
-    # currencies = await CryptoHelper.get_currencies()
-    balance = await CryptoHelper.get_balance()
-    # rates = await CryptoHelper.get_exchange_rates()
-    stats = await CryptoHelper.get_stats()
-
-    # invoice = await CryptoHelper.create_invoice(amount=1, asset=Assets.TON, description='Оплата 1 тон')  # methos to make a check
-
-    # await CryptoHelper.transfer(user_id=1060834219, asset=Assets.TON, amount=0.8,  spend_id=123)  # method to send coins to user
-
-
-    # CryptoHelper.
-    # e = await CryptoHelper.get_exchange_rates()  # курс
-    # o = await CryptoHelper.get_invoices()
-    await CryptoHelper.delete_invoice(215445)
-    # for i in o:
-    #     try:
-    #         await CryptoHelper.delete_invoice(i.invoice_id)
-    #     except Exception as e:
-    #         print(e)
-    #         continue
-    await CryptoHelper.close()
-
-    # print(*[i for i in o], sep='\n')
+@router.callback_query(ChannelProtect(), F.data == 'subscription')
+async def process_press_subscription(callback: CallbackQuery, bot: Bot):
+    logging.info(f'process_press_subscription: {callback.message.chat.id}')
+    # user_channel_status = await bot.get_chat_member(chat_id=config.tg_bot.channel_name,
+                                                    # user_id=callback.message.chat.id)
+    # print(user_channel_status)
+    # if user_channel_status.status != 'left':
+    await callback.answer('')
+    await user_subscription(message=callback)
+    # else:
+    #     await callback.message.answer(text=f'Просим тебя подписаться на канал: '
+    #                                        f'<a href="{config.tg_bot.channel_name}">{config.tg_bot.channel_name}</a>',
+    #                                   reply_markup= await keyboards_subscription(),
+    #                                   parse_mode='html')
 
 
+async def user_subscription(message: Message | CallbackQuery):
+    logging.info(f'user_subscription: {message.from_user.id}')
+    if isinstance(message, Message):
+        await message.answer(text=f'Привет, {message.from_user.first_name} 👋\n'
+                              f'Бот позволяет ....',
+                         reply_markup=await keyboards_main())
+    else:
+        await message.message.answer(text=f'Привет, {message.from_user.first_name} 👋\n'
+                              f'Бот позволяет ....',
+                         reply_markup=await keyboards_main())
 
-#     # print(*[i for i in currencies], sep='\n')
-#     # print(stats)
-#     # print(invoice)
-#     # print(ch)
-#     print(*[i for i in balance], sep='\n')
 
-# run(f())
+@router.message(F.text == 'Баланс')
+async def get_user_balance(message: Message):
+    logging.info(f'get_user_balance: {message.from_user.id}')
+    balance_user = await get_balance(message.from_user.id)
+    await message.answer(text=f'Ваш баланс составляет:\n'
+                              f'{balance_user} TON')
+
+
+@router.message(F.text == 'Пригласить реферала')
+async def get_link_ref(message: Message, bot: Bot):
+    logging.info(f'get_link_referal: {message.chat.id}')
+    link = await get_referral_link(message.from_user.id)
+    await message.answer(text=f'Ваша реферальная ссылка:\n'
+                              f'{link}')
+
+
+@router.message(F.text == 'Список рефералов')
+async def get_list_referrals(message: Message):
+    logging.info(f'get_list_user_referal: {message.chat.id}')
+
+    msg =  await get_referral_users(message.from_user.id)
+
+    if len(msg) > 4096:
+        for x in range(0, len(msg), 4096):
+            await message.answer(msg[x:x+4096])
+            await asyncio.sleep(0.2)
+    else:
+        await message.answer(msg)

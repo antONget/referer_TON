@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Router
 from aiogram.types import Message, CallbackQuery
 from aiogram.types import FSInputFile
-from module.data_base import get_list_user
+from database.requests import get_all_users
 from services.get_exel import list_users_to_exel
 from config_data.config import Config, load_config
 
@@ -45,10 +45,10 @@ async def all_message(message: Message) -> None:
             await message.answer_document(FSInputFile(file_path))
 
         if message.text == '/get_listusers':
-            list_user = get_list_user()
+            list_user = await get_all_users()
             text = 'Список пользователей:\n'
             for i, user in enumerate(list_user):
-                text += f'{i+1}. {user[1]} - {user[2]}\n'
+                text += f'{i+1}. @{user.username} - {user.ton_balance} TON\n\n'
                 if i % 10 == 0 and i > 0:
                     await asyncio.sleep(0.2)
                     await message.answer(text=text)
@@ -56,7 +56,7 @@ async def all_message(message: Message) -> None:
             await message.answer(text=text)
 
         if message.text == '/get_exelusers':
-            list_users_to_exel()
+            await list_users_to_exel()
             file_path = "list_user.xlsx"  # или "folder/filename.ext"
             await message.answer_document(FSInputFile(file_path))
 

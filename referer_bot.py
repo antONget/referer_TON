@@ -4,7 +4,8 @@ import logging
 from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
 from handlers import handler_user, other_handlers
-
+from handlers.scheduler import send_ton
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 # Инициализируем logger
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,9 @@ async def main():
     # Инициализируем бот и диспетчер
     bot = Bot(token=config.tg_bot.token)
     dp = Dispatcher()
-
+    scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
+    # # понедельник
+    scheduler.add_job(send_ton, 'cron', hour=10, args=(bot,))
     # Регистрируем router в диспетчере
     dp.include_router(handler_user.router)
     dp.include_router(other_handlers.router)

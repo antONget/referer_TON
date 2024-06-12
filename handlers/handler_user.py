@@ -27,7 +27,7 @@ class User(StatesGroup):
 
 
 class ChannelProtect(Filter):
-    async def __call__(self, message: Message):
+    async def __call__(self, message: Message, bot: Bot):
         u_status = await bot.get_chat_member(chat_id=config.tg_bot.channel_name, user_id=message.from_user.id)
         if isinstance(u_status, ChatMemberMember) or isinstance(u_status, ChatMemberAdministrator) \
                 or isinstance(u_status, ChatMemberOwner):
@@ -35,21 +35,21 @@ class ChannelProtect(Filter):
         if isinstance(message, CallbackQuery):
             await message.answer('')
             await message.message.answer(text=f'Чтобы получать вознаграждения за приглашенных пользователей, а самому'
-                                              f' найти вакансию своей мечты подпишись на канал'
+                                              f' найти вакансию своей мечты подпишись на канал '
                                               f'<a href="{config.tg_bot.channel_name}">{config.tg_bot.channel_name}</a>',
-                                         reply_markup=await keyboards_subscription(),
+                                         reply_markup=keyboards_subscription(),
                                          parse_mode='html')
         else:
             await message.answer(text=f'Чтобы получать вознаграждения за приглашенных пользователей, а самому найти'
-                                      f' вакансию своей мечты подпишись на канал'
+                                      f' вакансию своей мечты подпишись на канал '
                                       f'<a href="{config.tg_bot.channel_name}">{config.tg_bot.channel_name}</a>',
-                                 reply_markup=await keyboards_subscription(),
+                                 reply_markup=keyboards_subscription(),
                                  parse_mode='html')
         return False
 
 
 @router.message(ChannelProtect(), CommandStart())
-async def process_start_command_user(message: Message,  command: CommandObject) -> None:
+async def process_start_command_user(message: Message, command: CommandObject, bot: Bot) -> None:
     logging.info("process_start_command_user")
     referer_id = 0
     args = command.args
@@ -73,11 +73,11 @@ async def user_subscription(message: Message | CallbackQuery):
     if isinstance(message, Message):
         await message.answer(text=f'Привет, {message.from_user.first_name} 👋\n'
                                   f'Бот позволяет ....',
-                             reply_markup=await keyboards_main())
+                             reply_markup=keyboards_main())
     else:
         await message.message.answer(text=f'Привет, {message.from_user.first_name} 👋\n'
                                           f'Бот позволяет ....',
-                                     reply_markup=await keyboards_main())
+                                     reply_markup=keyboards_main())
 
 
 @router.message(F.text == 'Баланс')

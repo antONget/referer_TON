@@ -24,10 +24,10 @@ def get_list_all_anketa() -> list:
 
 def get_list_anketa(id_anketa: int) -> list:
     logging.info(f'get_list_anketa')
-    username_referer = sheet.row_values(row=id_anketa)
+    username_referer = sheet.row_values(row=id_anketa+1)
     return username_referer
 
 
 def update_status_anketa(id_anketa: int, status: str) -> None:
     logging.info(f'update_status_anketa')
-    sheet.update_cell(id_anketa, 6, status)
+    sheet.update_cell(id_anketa+1, 7, status)

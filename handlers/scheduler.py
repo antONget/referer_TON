@@ -58,8 +58,8 @@ async def send_ton(bot: Bot):
             if 'result' in result:
                 try:
                     await bot.send_message(chat_id=int(id_superadmin),
-                                           text=f'Подтвердите начисление пользователю {anketa[3]}',
-                                           reply_markup=keyboards_confirm_pay(id_anketa=anketa[1]))
+                                           text=f'Подтвердите начисление пользователю {anketa[2]}',
+                                           reply_markup=keyboards_confirm_pay(id_anketa=anketa[0]))
                 except:
                     pass
     # если список пустой то информируем админа
@@ -85,9 +85,9 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
     logging.info(f'process_cancel_pay: {callback.message.chat.id}')
     id_anketa = int(callback.data.split('_')[2])
     info_anketa = get_list_anketa(id_anketa=id_anketa)
-    await callback.answer(text=f'Начисление для пользователя @{info_anketa[3]} отменено', show_alert=True)
+    await callback.answer(text=f'Начисление для пользователя @{info_anketa[2]} отменено', show_alert=True)
     update_status_anketa(id_anketa=id_anketa, status='❌')
-    send_ton(bot=bot)
+    await send_ton(bot=bot)
 
 
 @router.callback_query(F.data.startswith('confirm_pay_'))
@@ -98,8 +98,8 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
     logging.info(f'process_cancel_pay: {callback.message.chat.id}')
     id_anketa = int(callback.data.split('_')[2])
     info_anketa = get_list_anketa(id_anketa=id_anketa)
-    await callback.answer(text=f'Начисление для пользователя @{info_anketa[3]} подтверждено', show_alert=True)
+    await callback.answer(text=f'Начисление для пользователя @{info_anketa[2]} подтверждено', show_alert=True)
     update_status_anketa(id_anketa=id_anketa, status='💰')
-    await pay_ton_to(user_id=info_anketa[2], amount=0.5)
-    await pay_ton_to(user_id=info_anketa[4], amount=0.2)
-    send_ton(bot=bot)
+    await pay_ton_to(user_id=info_anketa[1], amount=0.5)
+    await pay_ton_to(user_id=info_anketa[3], amount=0.2)
+    await send_ton(bot=bot)

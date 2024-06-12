@@ -7,6 +7,7 @@ config: Config = load_config()
 db = sqlite3.connect('database.db', check_same_thread=False, isolation_level='EXCLUSIVE')
 
 
+
 # СОЗДАНИЕ ТАБЛИЦ - users
 def create_table_users() -> None:
     """

@@ -61,7 +61,6 @@ async def add_referral_user(main_user_id: int, referral_user_id: int):
                 await session.commit()
 
 
-
 async def increase_ton_balance(tg_id: int, s: float):
     """
     ```

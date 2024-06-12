@@ -13,12 +13,9 @@ router = Router()
 config: Config = load_config()
 
 
-
-
 @router.callback_query()
 async def all_calback(callback: CallbackQuery) -> None:
-    logging.info(f'all_calback: {callback.message.chat.id}')
-    # print(callback.data)
+    logging.info(f'all_callback: {callback.message.chat.id}')
 
 
 @router.message()
@@ -26,25 +23,25 @@ async def all_message(message: Message) -> None:
     logging.info(f'all_message')
     if message.photo:
         logging.info(f'all_message message.photo')
-        # print(message.photo[-1].file_id)
 
     if message.sticker:
         logging.info(f'all_message message.sticker')
-        # Получим ID Стикера
-        # print(message.sticker.file_id)
 
     list_super_admin = list(map(int, config.tg_bot.admin_ids.split(',')))
     if message.chat.id in list_super_admin:
-
+        logging.info(f'all_message message.admin')
         if message.text == '/get_logfile':
+            logging.info(f'all_message message.admin./get_logfile')
             file_path = "py_log.log"
             await message.answer_document(FSInputFile(file_path))
 
         if message.text == '/get_dbfile':
+            logging.info(f'all_message message.admin./get_dbfile')
             file_path = "database.db"
             await message.answer_document(FSInputFile(file_path))
 
         if message.text == '/get_listusers':
+            logging.info(f'all_message message.admin./get_listusers')
             list_user = await get_all_users()
             text = 'Список пользователей:\n'
             for i, user in enumerate(list_user):
@@ -56,8 +53,9 @@ async def all_message(message: Message) -> None:
             await message.answer(text=text)
 
         if message.text == '/get_exelusers':
+            logging.info(f'all_message message.admin.//get_exelusers')
             await list_users_to_exel()
-            file_path = "list_user.xlsx"  # или "folder/filename.ext"
+            file_path = "list_user.xlsx"
             await message.answer_document(FSInputFile(file_path))
 
 

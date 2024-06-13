@@ -6,18 +6,11 @@ from database.models import async_session
 # from models import async_session
 
 
-
-
 import logging as lg
 
-
-from sqlalchemy import select #, update, delete
-
-
+from sqlalchemy import select  # , update, delete
 
 """ ------------- ADD METHODS -------------"""
-
-
 
 
 async def add_user(data: dict):
@@ -72,20 +65,14 @@ async def increase_ton_balance(tg_id: int, s: float):
     async with async_session() as session:
         user: User = await session.scalar(select(User).where(User.id == tg_id))
         if user:
-            
             user.ton_balance = format(user.ton_balance + s, '.4f')
-            
-                
+
             await session.commit()
 
 
-
-
-
-
-
-
 """ ------------- GET METHODS -------------"""
+
+
 async def get_balance(tg_id: int):
     """
     ```
@@ -114,13 +101,12 @@ async def get_referral_link(tg_id: int):
             return user.referral_link
         else:
             return None
-        
 
 
 async def _get_username_from_id(tg_id: int):
     '''```code
     returns:
-        username for function "get_referral_users" 
+        username for function "get_referral_users"
     ```'''
     async with async_session() as session:
         user: User = await session.scalar(select(User).where(User.id == tg_id))
@@ -129,11 +115,12 @@ async def _get_username_from_id(tg_id: int):
         else:
             return None
 
+
 async def get_referral_users(tg_id: int):
     '''```python
     returns:
         По вашей реферальной ссылке подписались на бот {len(users)} пользователей:\n\n
-        
+
         1. @username1
         2. @username2
         3. @username3
@@ -149,11 +136,32 @@ async def get_referral_users(tg_id: int):
                 s += f"{c}. @{await _get_username_from_id(int(user_id))}\n"
                 c += 1
 
-
             return s
         else:
             return None
 
+
+async def can_add_ref_user(tg_id) -> bool:
+    """
+    ```
+    returns:
+       True if user not in db else False
+    ```
+    """
+    async with async_session() as session:
+        users = (await session.scalars(select(User))).all()
+        c = 0
+        for user in users:
+            if user:
+                if len(user.referral_users) != 0:
+                    ref_users = user.referral_users.split(",")
+                    for ref_user in ref_users:
+                        if ref_user == str(tg_id):
+                            c += 1
+
+        if c != 0:
+            return False
+        return True
 
 
 async def get_all_users() -> list[User]:
@@ -162,11 +170,15 @@ async def get_all_users() -> list[User]:
         return users
 
 
+async def get_user_from_id(user_id: int):
+    async with async_session() as session:
+        user = await session.scalar(select(User).where(User.id == user_id))
+        return user
+
+# from asyncio import run, sleep
 
 
-
-from asyncio import run, sleep
-
+# print(run(can_add_ref_user(101)))
 # print([ i.username for i in run(get_all_users())])
 
 # run(add_user({"id":6663237590, "username":"paul", "referral_link":'https://t.me/PBAsync', 'referral_users':'123,1234,12345'}))

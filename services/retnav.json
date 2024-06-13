@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "retnav-209910",
+  "private_key_id": "21408d03b7f8bbb53557c06bbc814cb84951d6f3",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDYyh7gHGdaoqqj\nYOHFJmtzgh2f6Ziu6PqSqErRCJAK0osZC+MelGQjqNXK/IyxWClTzjTrtKinemf6\nYUXJEHm0IQyeJFmMVekhnIv+KT0QFcnDDAocql6gJxZMajdJqX8dmRLFup9axHwW\nIQZEKiy+I66Wrl15sy/9girMHi86UGm5U73/HldWdJFZLrJL972DeLAz4WOgxWR5\nfLj1rxhuRNlL3QVcUNmpthx7903wmD8mPUJI61Z4Sbt7pvdn8aWpRUgJEUNO6KwE\nIsEL46+a0eSOb0Qg0yYdkcOptxtpR6xGoSUc3beL/izLqThWUC9oRO5CZt/vatRa\nu7LkSmcrAgMBAAECggEAFOajxGqooknllrvb+ISEPo4waf79C/wFUIduMyoWrRxw\ncbk+K/AVmYSJHDluHRkJXv2WB5WS3xbDmJWxQznV6gJ3s3WAtrF/uRBdRONX8kmP\nesEZ5nqchedO1I43B2CSk1lzQGIGRBuGdSG493BzgN9y0S89buLSQShAFQ7h8caq\nhLeaDTiiWLQxUFOJ9eAf+HnQmWcdJODHm6C0dPWNpkxFbglosj7ikNknyvyHTzSe\n/rYWkBcY/8w/gA739vB9Qn/70atOkxoSEuIJPJrO03r47+GQNSUtGTZbNwC/0Y22\nNcaBs3wCSU3gs5ucXMZgGiz5Wk1dkEXIUhoNDx6xyQKBgQDuvuQubZlCld2l/5pL\nSqu2nR5CKgADISsTzScU6clYp8LW2Gffx54nYw9mfjzl9OCtj9wVnFwMipwnpJGL\nsOPGkrntYztgqr1cVirxcd5IU9ppdSkHLIpykk3j0P/1FR/3XGI2KxoOqNjxDyRQ\n/KdqGo7y55Iwxy5BTJGBxaa+qQKBgQDodQMMWC6oZiLXJuZ0rsM1+arzxd2gmFIT\nZYUuzpN/UhF3oYKwoBRogds2vruroqp0I51j7jrE1nj++OAPcZdqPZJUhhDd3TWy\nTBjoWece3RDyzxwjcOU+vbWV2ZFV13dPUmIfV08ayQGJ3zqJs8cAJqFRTFZmxRSA\nGTsZy7u/swKBgQCnlNKyTDgR5wRIKtxxER7q9epxYu3TRIrqQUy3f0rXshovmIOB\nLqsy1nPO67lvaK305lAD01dBbmIh6YBIX4fisMdVfBwHxJFaqRlHlTgD6OgcsiJ0\naK1dsph92wxvSb7AcNZ3U1XdCGQPASPqvQ3+ilng4u9Y0dcD+uz//G8I0QKBgQDG\nXDNBsW3/HUjVt8goAYlq4aXTZyD8DX7cNmEz0+thVjK5lwTim3dOxqC9UnzqtWAm\nws1nnL5hgXK2gMER7Kh8bBYWMmDqMf3EK9OFUlI6sAHqcHledNPqehAd0w6F5dtV\nwMMiY2qJPMUnVWmqX9KMempl6XJBOCOKO/2GwadwqQKBgQDlydxUml+a0ze3TL0X\n6OpfUaIr0jsQvS7M9ZjCIm84JRVlVdU97R6sGhrBn6N+jkPgKE/Ope7XFy9sUyCT\n6adWegPFDizCiBovM8A+Mv0QnilcfSYkBwylcsr/DHX21MlwmLweJ99C8UE+V6Qw\nmqFcdcCLZj2e+K9Z+oQwosQs9g==\n-----END PRIVATE KEY-----\n",
+  "client_email": "telegrambot@retnav-209910.iam.gserviceaccount.com",
+  "client_id": "113165317178873869138",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/telegrambot%40retnav-209910.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

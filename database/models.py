@@ -22,7 +22,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(200))
     referral_link: Mapped[str] = mapped_column(String(200))
-    referral_users: Mapped[str] = mapped_column(String, default= "") # id_1,id_2,...
+    referral_users: Mapped[str] = mapped_column(String, default="")  # id_1,id_2,...
     ton_balance: Mapped[int] = mapped_column(Float, default=0.0)
 
 

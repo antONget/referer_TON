@@ -1,9 +1,12 @@
 import gspread
 import logging
+# TEST
 gp = gspread.service_account(filename='services/test.json')
-
 gsheet = gp.open('Referal')
 sheet = gsheet.worksheet("Лист1")
+# gp = gspread.service_account(filename='services/retnav.json')
+# gsheet = gp.open('TelegramBot ')
+# sheet = gsheet.worksheet("list1")
 
 
 def append_anketa(id_anketa: int, id_telegram_refer: int, username_refer: str, id_telegram_referer: int,

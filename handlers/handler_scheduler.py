@@ -43,7 +43,8 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
     await bot.send_message(chat_id=int(info_anketa[1]),
                            text='Вам было отправлено 0.15 TON\n\n'
                                 'Проверьте ваш кошелек @CryptoBot')
-    if not int(info_anketa[3]):
-        await pay_ton_to(user_id=info_anketa[3], amount=0.15)
+    if int(info_anketa[3]):
+        print(info_anketa)
+        await pay_ton_to(user_id=int(info_anketa[3]), amount=0.15)
     await callback.answer()
     await send_ton(bot=bot)

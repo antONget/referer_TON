@@ -31,6 +31,11 @@ def get_list_anketa(id_anketa: int) -> list:
     return username_referer
 
 
-def update_status_anketa(id_anketa: int, status: str) -> None:
-    logging.info(f'update_status_anketa')
-    sheet.update_cell(id_anketa+1, 7, status)
+def update_status_anketa(status: str, telegram_id: int) -> None:
+    logging.info(f'update_status_anketa: {telegram_id}')
+    values = sheet.get_all_values()
+    id_anketa = 0
+    for i, row in enumerate(values[1:]):
+        if int(row[1]) == telegram_id:
+            id_anketa = i
+    sheet.update_cell(row=id_anketa+2, col=7, value=status)

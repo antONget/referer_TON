@@ -4,8 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_
 
 from typing import List
 
-
-
 engine = create_async_engine(url="sqlite+aiosqlite:///database/db.sqlite3", echo=False)
 
 
@@ -23,9 +21,8 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(200))
     referral_link: Mapped[str] = mapped_column(String(200))
     referral_users: Mapped[str] = mapped_column(String, default="")  # id_1,id_2,...
+    referer_id: Mapped[int] = mapped_column(Integer, default=0)
     ton_balance: Mapped[int] = mapped_column(Float, default=0.0)
-
-
 
 
 async def async_main():
@@ -33,5 +30,5 @@ async def async_main():
         await conn.run_sync(Base.metadata.create_all)
 
 # import asyncio
-
+#
 # asyncio.run(async_main())

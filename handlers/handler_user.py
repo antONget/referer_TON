@@ -52,8 +52,9 @@ async def process_start_command_user(message: Message, command: CommandObject, b
     args = command.args
     if args:
         referrer_id = int(decode_payload(args))
-        if await can_add_ref_user(message.from_user.id):
-            await add_referral_user(referrer_id, message.from_user.id)
+        print(referrer_id)
+        if not await get_user_from_id(user_id=message.from_user.id):
+            await add_referral_user(main_user_id=referrer_id, referral_user_id=message.from_user.id)
             #
             # try:
             #     tr = await pay_ton_to(referrer_id, 0.15)
@@ -77,10 +78,14 @@ async def process_start_command_user(message: Message, command: CommandObject, b
             #                                     f' за приглашенного @{message.from_user.username}')
 
             link = await create_start_link(bot=bot, payload=str(message.from_user.id), encode=True)
-            await add_user({"id": message.from_user.id, "username": message.from_user.username, "referral_link": link})
+            await add_user({"id": message.from_user.id, "username": message.from_user.username, "referral_link": link,
+                            "referer_id": referrer_id})
             await user_subscription(message)
         else:
-            await message.answer('Вас может пригласить только один человек!')
+            user = await get_user_from_id(user_id=message.chat.id)
+            if user.referer_id != referrer_id:
+                await message.answer('Вас может пригласить только один человек!')
+            await user_subscription(message)
     else:
         link = await create_start_link(bot=bot, payload=str(message.from_user.id), encode=True)
         await add_user({"id": message.from_user.id, "username": message.from_user.username, "referral_link": link})
@@ -178,23 +183,25 @@ async def confirm_anketa(callback: CallbackQuery, state: FSMContext, bot: Bot):
         user_dict[callback.message.chat.id] = await state.get_data()
         anketa = user_dict[callback.message.chat.id]['anketa']
         user = await get_user_from_id(user_id=callback.message.chat.id)
-        print(user)
-        referer = await get_user_from_id(user_id=user.referral_users)
-        if referer:
+        if user.referer_id != 0:
+            referer = await get_user_from_id(user_id=user.referer_id)
+            id_telegram_referer = user.referer_id
             username_referer = referer.username
         else:
+            id_telegram_referer = 0
             username_referer = 'none'
         append_anketa(id_anketa=id_anketa,
                       id_telegram_refer=callback.message.chat.id,
                       username_refer=callback.from_user.username,
-                      id_telegram_referer=user.referral_users,
+                      id_telegram_referer=id_telegram_referer,
                       username_referer=username_referer,
                       link_post=anketa,
                       status="⚠️")
         await asyncio.sleep(3)
         await bot.delete_message(chat_id=callback.message.chat.id,
                                  message_id=msg.message_id)
-        await callback.message.answer(text='Отлично, ваша анкета отправлена!')
+        await callback.answer(text='Отлично, ваша анкета отправлена!',
+                              show_alert=True)
         await callback.message.answer(text='Начисление TON произойдет после выхода на работу. \n\n'
                                            'Также вы можете воспользоваться реферальной программой и получать TON за'
                                            ' приглашенных пользователей')
@@ -220,18 +227,23 @@ async def confirm_complete(bot: Bot, message: Message):
 async def want_ton(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.answer(text='Информация направлена администратору и после подтверждения вам будет начислено'
                                ' вознаграждение. Спасибо!',
-                          reply_markup=keyboards_main())
+                          show_alert=True)
     await bot.delete_message(chat_id=callback.message.chat.id,
                              message_id=callback.message.message_id)
     user_dict[callback.message.chat.id] = await state.get_data()
     anketa = user_dict[callback.message.chat.id]['anketa']
     id_anketa = user_dict[callback.message.chat.id]['id_anketa']
+    username = callback.from_user.username
     for admin_id in config.tg_bot.admin_ids.split(','):
         await bot.send_message(chat_id=int(admin_id),
-                               text=f'Пользователь @{callback.message.from_user.username}, откликнувшийся на вакансию {anketa},'
+                               text=f'Пользователь @{username}, откликнувшийся на вакансию:\n'
+                                    f' {anketa},'
                                     f' вышел на работу.\n'
                                     f'Подтвердите это изменение сведения в гугл таблице строка № {id_anketa}')
-    await confirm_complete(bot, callback.message)
+    for admin_id in config.tg_bot.admin_ids.split(','):
+        await bot.send_message(chat_id=admin_id,
+                               text=f'Подтвердите начисление пользователю @{username}!',
+                               reply_markup=confirm(callback.message.chat.id))
     await state.set_state(default_state)
     await callback.answer()
 
@@ -239,9 +251,10 @@ async def want_ton(callback: CallbackQuery, state: FSMContext, bot: Bot):
 @router.callback_query(F.data.startswith('confirm_pay_'))
 async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
     logging.info(f'transfer_pay_to: {callback.data.split("_")[-1]}')
-    await callback.answer('')
+    await bot.delete_message(chat_id=callback.message.chat.id,
+                             message_id=callback.message.message_id)
     user_to_pay = int(callback.data.split('_')[-1])
-
+    update_status_anketa(status='✅', telegram_id=user_to_pay)
     try:
         tr = await pay_ton_to(user_to_pay, 0.15)
         if tr.status == 'completed':
@@ -251,9 +264,7 @@ async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
             await bot.send_message(chat_id=user_to_pay,
                                    text='Вам было отправлено 0.15 TON\n\n'
                                         'Проверьте ваш кошелек @CryptoBot')
-            user_dict[callback.message.chat.id] = await state.get_data()
-            id_anketa = user_dict[callback.message.chat.id]['id_anketa']
-            update_status_anketa(id_anketa=id_anketa, status='✅')
+            update_status_anketa(status='💰', telegram_id=user_to_pay)
         else:
             for admin_id in config.tg_bot.admin_ids.split(','):
                 await bot.send_message(chat_id=admin_id,
@@ -283,7 +294,5 @@ async def cancel_pay(callback: CallbackQuery, bot: Bot, state: FSMContext):
                                   parse_mode='html')
     await bot.send_message(chat_id=user_to_pay,
                            text='Оплата была не одобрена администрацией')
-    user_dict[callback.message.chat.id] = await state.get_data()
-    id_anketa = user_dict[callback.message.chat.id]['id_anketa']
-    update_status_anketa(id_anketa=id_anketa, status='❌')
+    update_status_anketa(status='❌', telegram_id=user_to_pay)
     await callback.answer()

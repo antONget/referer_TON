@@ -44,8 +44,8 @@ def on_work(id_anketa: int) -> ReplyKeyboardMarkup:
 
 def confirm(user_id: int) -> ReplyKeyboardMarkup:
     logging.info("confirm_pay")
-    button_1 = InlineKeyboardButton(text='Подтвердить', callback_data='confirm_pay_' + str(user_id))
-    button_2 = InlineKeyboardButton(text='Отмена', callback_data='cancel_pay_' + str(user_id))
+    button_1 = InlineKeyboardButton(text='Подтвердить', callback_data=f'confirm_pay_{user_id}')
+    button_2 = InlineKeyboardButton(text='Отмена', callback_data=f'cancel_pay_{user_id}')
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]], )
     return keyboard

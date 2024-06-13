@@ -1,6 +1,6 @@
 from services.googlesheets import get_list_all_anketa, get_list_anketa, update_status_anketa
 from keyboards.keybord_scheduler import keyboards_confirm_pay
-from crypto.CryptoHelper import pay_ton_to
+
 from aiogram import Bot, Router, F
 from aiogram.types import CallbackQuery
 from config_data.config import Config, load_config
@@ -33,8 +33,9 @@ async def send_ton(bot: Bot):
     # если список не пустой то ищем статус анкеты '✅'
     if list_anketa:
         for item in list_anketa:
+            print(item)
             # если нашли прерываем цикл и обрабатываем событие
-            if item[7] == '✅':
+            if item[6] == '✅':
                 anketa = item
                 break
         # если событий целевого действия нет то информируем админа
@@ -76,30 +77,32 @@ async def send_ton(bot: Bot):
                 except:
                     pass
 
-
-@router.callback_query(F.data.startswith('cancel_pay_'))
-async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
-    """
-    Отмена начисления вознаграждения, изменяем статус анкеты и запускаем поиск нового события
-    """
-    logging.info(f'process_cancel_pay: {callback.message.chat.id}')
-    id_anketa = int(callback.data.split('_')[2])
-    info_anketa = get_list_anketa(id_anketa=id_anketa)
-    await callback.answer(text=f'Начисление для пользователя @{info_anketa[2]} отменено', show_alert=True)
-    update_status_anketa(id_anketa=id_anketa, status='❌')
-    await send_ton(bot=bot)
-
-
-@router.callback_query(F.data.startswith('confirm_pay_'))
-async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
-    """
-    Подтверждение начисления вознаграждения пользователю и его рефереру, запуск поиска нового события
-    """
-    logging.info(f'process_cancel_pay: {callback.message.chat.id}')
-    id_anketa = int(callback.data.split('_')[2])
-    info_anketa = get_list_anketa(id_anketa=id_anketa)
-    await callback.answer(text=f'Начисление для пользователя @{info_anketa[2]} подтверждено', show_alert=True)
-    update_status_anketa(id_anketa=id_anketa, status='💰')
-    await pay_ton_to(user_id=info_anketa[1], amount=0.5)
-    await pay_ton_to(user_id=info_anketa[3], amount=0.2)
-    await send_ton(bot=bot)
+#
+# @router.callback_query(F.data.startswith('schcancel_pay_'))
+# async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
+#     """
+#     Отмена начисления вознаграждения, изменяем статус анкеты и запускаем поиск нового события
+#     """
+#     logging.info(f'process_cancel_pay: {callback.message.chat.id}')
+#     id_anketa = int(callback.data.split('_')[2])
+#     info_anketa = get_list_anketa(id_anketa=id_anketa)
+#     await callback.answer(text=f'Начисление для пользователя @{info_anketa[2]} отменено', show_alert=True)
+#     update_status_anketa(status='❌', telegram_id=info_anketa[1])
+#     await callback.answer()
+#     await send_ton(bot=bot)
+#
+#
+# @router.callback_query(F.data.startswith('schconfirm_pay_'))
+# async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
+#     """
+#     Подтверждение начисления вознаграждения пользователю и его рефереру, запуск поиска нового события
+#     """
+#     logging.info(f'process_cancel_pay: {callback.message.chat.id}')
+#     id_anketa = int(callback.data.split('_')[2])
+#     info_anketa = get_list_anketa(id_anketa=id_anketa)
+#     await callback.answer(text=f'Начисление для пользователя @{info_anketa[2]} подтверждено', show_alert=True)
+#     update_status_anketa(status='💰', telegram_id=info_anketa[1])
+#     await pay_ton_to(user_id=info_anketa[1], amount=0.17)
+#     await pay_ton_to(user_id=info_anketa[3], amount=0.15)
+#     await callback.answer()
+#     await send_ton(bot=bot)

@@ -235,16 +235,16 @@ async def want_ton(callback: CallbackQuery, state: FSMContext, bot: Bot):
     user_dict[callback.message.chat.id] = await state.get_data()
     anketa = user_dict[callback.message.chat.id]['anketa']
     id_anketa = user_dict[callback.message.chat.id]['id_anketa']
-    username = callback.from_user.username
+    # username = callback.from_user.username
     for admin_id in config.tg_bot.admin_ids.split(','):
         try:
             await bot.send_message(chat_id=int(admin_id),
-                                   text=f'Пользователь @{username}, откликнувшийся на вакансию:\n'
+                                   text=f'Пользователь @{callback.from_user.username}, откликнувшийся на вакансию:\n'
                                         f' {anketa},'
                                         f' вышел на работу.\n'
                                         f'Подтвердите это изменение сведения в гугл таблице строка № {id_anketa}')
             await bot.send_message(chat_id=int(admin_id),
-                                   text=f'Подтвердите начисление пользователю @{username}!',
+                                   text=f'Подтвердите начисление пользователю @{callback.from_user.username}!',
                                    reply_markup=confirm(callback.message.chat.id))
         except:
             pass

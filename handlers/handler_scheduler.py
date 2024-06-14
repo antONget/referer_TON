@@ -22,8 +22,11 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
     info_anketa = get_list_anketa(id_anketa=id_anketa)
     await callback.answer(text=f'Начисление для пользователя @{info_anketa[2]} отменено', show_alert=True)
     update_status_anketa(status='❌', telegram_id=int(info_anketa[1]))
-    await bot.send_message(chat_id=int(info_anketa[1]),
-                           text='Оплата была не одобрена администрацией')
+    try:
+        await bot.send_message(chat_id=int(info_anketa[1]),
+                               text='Оплата была не одобрена администрацией')
+    except:
+        pass
     await callback.answer()
     await send_ton(bot=bot)
 
@@ -42,9 +45,12 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
     await pay_ton_to(user_id=int(info_anketa[1]), amount=0.17)
     await increase_ton_balance(tg_id=int(info_anketa[1]), s=0.17)
     update_status_anketa(status='💰', telegram_id=int(info_anketa[1]))
-    await bot.send_message(chat_id=int(info_anketa[1]),
-                           text='Вам было отправлено 0.15 TON\n\n'
-                                'Проверьте ваш кошелек @CryptoBot')
+    try:
+        await bot.send_message(chat_id=int(info_anketa[1]),
+                               text='Вам было отправлено 0.15 TON\n\n'
+                                    'Проверьте ваш кошелек @CryptoBot')
+    except:
+        pass
     if int(info_anketa[3]):
         print(info_anketa)
         await pay_ton_to(user_id=int(info_anketa[3]), amount=0.15)

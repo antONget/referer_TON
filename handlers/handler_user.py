@@ -1,5 +1,5 @@
 from aiogram import Router, F, Bot
-from aiogram.types import Message, CallbackQuery, ChatMemberMember, ChatMemberAdministrator, ChatMemberOwner, ReplyKeyboardRemove
+from aiogram.types import Message, CallbackQuery, ChatMemberMember, ChatMemberAdministrator, ChatMemberOwner
 from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.utils.deep_linking import create_start_link, decode_payload
 from aiogram.filters import Filter
@@ -8,7 +8,7 @@ from aiogram.fsm.state import State, StatesGroup, default_state
 
 
 from config_data.config import Config, load_config
-from database.requests import add_user, get_balance, get_referral_users, get_referral_link, can_add_ref_user, \
+from database.requests import add_user, get_balance, get_referral_users, get_referral_link, \
     add_referral_user, _get_username_from_id, get_user_from_id, increase_ton_balance
 from keyboards.keyboard_user import keyboards_subscription, keyboards_main, yes_or_no, on_work, confirm
 from crypto.CryptoHelper import pay_ton_to, CodeErrorFactory
@@ -16,7 +16,6 @@ from services.googlesheets import get_list_all_anketa, append_anketa, update_sta
 
 import logging
 import asyncio
-
 
 router = Router()
 user_dict = {}
@@ -218,9 +217,12 @@ async def confirm_anketa(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
 async def confirm_complete(bot: Bot, message: Message):
     for admin_id in config.tg_bot.admin_ids.split(','):
-        await bot.send_message(chat_id=admin_id,
-                               text=f'Подтвердите начисление пользователю @{message.from_user.username}!',
-                               reply_markup=confirm(message.from_user.id))
+        try:
+            await bot.send_message(chat_id=int(admin_id),
+                                   text=f'Подтвердите начисление пользователю @{message.from_user.username}!',
+                                   reply_markup=confirm(message.from_user.id))
+        except:
+            pass
 
 
 @router.callback_query(F.data.startswith('wishton_'))
@@ -235,15 +237,17 @@ async def want_ton(callback: CallbackQuery, state: FSMContext, bot: Bot):
     id_anketa = user_dict[callback.message.chat.id]['id_anketa']
     username = callback.from_user.username
     for admin_id in config.tg_bot.admin_ids.split(','):
-        await bot.send_message(chat_id=int(admin_id),
-                               text=f'Пользователь @{username}, откликнувшийся на вакансию:\n'
-                                    f' {anketa},'
-                                    f' вышел на работу.\n'
-                                    f'Подтвердите это изменение сведения в гугл таблице строка № {id_anketa}')
-    for admin_id in config.tg_bot.admin_ids.split(','):
-        await bot.send_message(chat_id=admin_id,
-                               text=f'Подтвердите начисление пользователю @{username}!',
-                               reply_markup=confirm(callback.message.chat.id))
+        try:
+            await bot.send_message(chat_id=int(admin_id),
+                                   text=f'Пользователь @{username}, откликнувшийся на вакансию:\n'
+                                        f' {anketa},'
+                                        f' вышел на работу.\n'
+                                        f'Подтвердите это изменение сведения в гугл таблице строка № {id_anketa}')
+            await bot.send_message(chat_id=int(admin_id),
+                                   text=f'Подтвердите начисление пользователю @{username}!',
+                                   reply_markup=confirm(callback.message.chat.id))
+        except:
+            pass
     await state.set_state(default_state)
     await callback.answer()
 
@@ -262,26 +266,35 @@ async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
             await callback.message.answer(
                 f'✅ Пользователю @{await _get_username_from_id(user_to_pay)} отправлено <strong>0.15 TON</strong>',
                 parse_mode='html')
-            await bot.send_message(chat_id=user_to_pay,
-                                   text='Вам было отправлено 0.15 TON\n\n'
-                                        'Проверьте ваш кошелек @CryptoBot')
+            try:
+                await bot.send_message(chat_id=user_to_pay,
+                                       text='Вам было отправлено 0.15 TON\n\n'
+                                            'Проверьте ваш кошелек @CryptoBot')
+            except:
+                pass
             update_status_anketa(status='💰', telegram_id=user_to_pay)
         else:
             for admin_id in config.tg_bot.admin_ids.split(','):
-                await bot.send_message(chat_id=admin_id,
-                                       text=f'❗️Что-то пошло не так, и пользователю'
-                                            f' {await _get_username_from_id(user_to_pay)} не пришло 0.15 TON,'
-                                            f' проверьте кошелек, скорее всего там недостаточно средств!')
+                try:
+                    await bot.send_message(chat_id=int(admin_id),
+                                           text=f'❗️Что-то пошло не так, и пользователю'
+                                                f' {await _get_username_from_id(user_to_pay)} не пришло 0.15 TON,'
+                                                f' проверьте кошелек, скорее всего там недостаточно средств!')
+                except:
+                    pass
 
     except Exception as e:
         err = CodeErrorFactory(400)
         # logging.info([err.args, e.args])
         if e.args[0] == err.args[0]:
             for admin_id in config.tg_bot.admin_ids.split(','):
-                await bot.send_message(chat_id=admin_id,
-                                       text=f'❗️Недостаточно средств! Пользователю'
-                                            f' @{await _get_username_from_id(user_to_pay)} не пришло 0.15 TON'
-                                            f' за приглашенного реферала')
+                try:
+                    await bot.send_message(chat_id=int(admin_id),
+                                           text=f'❗️Недостаточно средств! Пользователю'
+                                                f' @{await _get_username_from_id(user_to_pay)} не пришло 0.15 TON'
+                                                f' за приглашенного реферала')
+                except:
+                    pass
     await callback.answer()
 
 
@@ -293,7 +306,10 @@ async def cancel_pay(callback: CallbackQuery, bot: Bot, state: FSMContext):
     await callback.message.answer(text=f'❌ Пользователю @{await _get_username_from_id(user_to_pay)} оплата'
                                        f' не отправлена',
                                   parse_mode='html')
-    await bot.send_message(chat_id=user_to_pay,
-                           text='Оплата была не одобрена администрацией')
+    try:
+        await bot.send_message(chat_id=user_to_pay,
+                               text='Оплата была не одобрена администрацией')
+    except:
+        pass
     update_status_anketa(status='❌', telegram_id=user_to_pay)
     await callback.answer()

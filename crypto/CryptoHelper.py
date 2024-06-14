@@ -1,11 +1,11 @@
 from aiocryptopay import AioCryptoPay, Networks
-from aiocryptopay.api import Assets, Balance, Check, Invoice
-
+from aiocryptopay.api import Assets, Balance, Check, Invoice, Transfer
+from aiocryptopay.exceptions import CodeErrorFactory
 # from settings.config import CRYPTO_TOKEN
 
 
 from asyncio import run
-
+from datetime import datetime
 
 
 CRYPTO_TOKEN = "14190:AA2b4nBwnFXoIMANNLS6kCvDAERb9Kh99Nq"
@@ -14,9 +14,10 @@ CryptoHelper : AioCryptoPay = AioCryptoPay(token=CRYPTO_TOKEN, network=Networks.
 
 
 
-async def pay_ton_to(user_id: int, amount: int | float):
-    await CryptoHelper.transfer(user_id=user_id, asset=Assets.TON, amount=amount,  spend_id=1029384756)  # method to send coins to user
+async def pay_ton_to(user_id: int, amount: int | float) -> Transfer:
+    tr = await CryptoHelper.transfer(user_id=user_id, asset=Assets.TON, amount=amount,  spend_id=datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))  # method to send coins to user
     await CryptoHelper.close()
+    return tr
 
 
 
@@ -60,54 +61,27 @@ async def create_invoice_link(amount: int | float):
     print(invoice)
     return invoice.bot_invoice_url
 
-# print(run(create_invoice_link(2)))
+# async def get_me():
+#     profile = await CryptoHelper.get_me()
+#     await CryptoHelper.close()
+#     return profile
+
+# print(run(get_me()))
+
+# print(run(create_invoice_link(4)))
 # print(run(create_check_link()))
 
 
 
+# run(pay_ton_to(1060834219, 0.14))
 
 
-
-# print(run(get_paid_invoices())) 
-# async def 
-
+# print(run(get_paid_invoices()))
+# print()
 # print(run(get_stats()))
-# run(get_balance())
+# print()
+# print(run(get_balance()))
 
 
 
-async def f():
-    # profile = await CryptoHelper.get_me()
-    # currencies = await CryptoHelper.get_currencies()
-    balance = await CryptoHelper.get_balance()
-    # rates = await CryptoHelper.get_exchange_rates()
-    stats = await CryptoHelper.get_stats()
 
-    # invoice = await CryptoHelper.create_invoice(amount=1, asset=Assets.TON, description='Оплата 1 тон')  # methos to make a check
-
-    # await CryptoHelper.transfer(user_id=1060834219, asset=Assets.TON, amount=0.8,  spend_id=123)  # method to send coins to user
-
-
-    # CryptoHelper.
-    # e = await CryptoHelper.get_exchange_rates()  # курс
-    # o = await CryptoHelper.get_invoices()
-    await CryptoHelper.delete_invoice(215445)
-    # for i in o:
-    #     try:
-    #         await CryptoHelper.delete_invoice(i.invoice_id)
-    #     except Exception as e:
-    #         print(e)
-    #         continue
-    await CryptoHelper.close()
-
-    # print(*[i for i in o], sep='\n')
-
-
-
-#     # print(*[i for i in currencies], sep='\n')
-#     # print(stats)
-#     # print(invoice)
-#     # print(ch)
-#     print(*[i for i in balance], sep='\n')
-
-# run(f())

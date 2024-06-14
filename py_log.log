@@ -1,16 +1,78 @@
-referer_bot.py:26 #INFO     [2024-06-12 19:50:47,232] - __main__ - Starting bot
-dispatcher.py:527 #INFO     [2024-06-12 19:50:47,404] - aiogram.dispatcher - Start polling
-dispatcher.py:341 #INFO     [2024-06-12 19:50:47,452] - aiogram.dispatcher - Run polling for bot @T_e_s_t_m_y_b_o_t_bot id=6689173506 - 'BOT_TestTest_1'
-keyboard_user.py:7 #INFO     [2024-06-12 19:50:49,627] - root - keyboards_subscription
-other_handlers.py:20 #INFO     [2024-06-12 19:50:49,723] - root - all_calback: 6663237590
-dispatcher.py:172 #INFO     [2024-06-12 19:50:49,723] - aiogram.event - Update id=130576838 is handled. Duration 296 ms by bot id=6689173506
-keyboard_user.py:7 #INFO     [2024-06-12 19:50:51,595] - root - keyboards_subscription
-other_handlers.py:26 #INFO     [2024-06-12 19:50:51,794] - root - all_message
-dispatcher.py:172 #INFO     [2024-06-12 19:50:51,794] - aiogram.event - Update id=130576839 is handled. Duration 250 ms by bot id=6689173506
-keyboard_user.py:7 #INFO     [2024-06-12 19:50:52,698] - root - keyboards_subscription
-other_handlers.py:20 #INFO     [2024-06-12 19:50:52,899] - root - all_calback: 6663237590
-dispatcher.py:172 #INFO     [2024-06-12 19:50:52,900] - aiogram.event - Update id=130576840 is handled. Duration 390 ms by bot id=6689173506
-handler_user.py:75 #INFO     [2024-06-12 19:51:06,987] - root - process_press_subscription: 6663237590
-handler_user.py:89 #INFO     [2024-06-12 19:51:06,987] - root - user_subscription: 6663237590
-keyboard_user.py:14 #INFO     [2024-06-12 19:51:06,987] - root - keyboards_main
-dispatcher.py:172 #INFO     [2024-06-12 19:51:07,062] - aiogram.event - Update id=130576841 is handled. Duration 125 ms by bot id=6689173506
+referer_bot.py:25 #INFO     [2024-06-14 16:08:04,773] - __main__ - Starting bot
+base.py:454 #INFO     [2024-06-14 16:08:04,948] - apscheduler.scheduler - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+base.py:895 #INFO     [2024-06-14 16:08:04,949] - apscheduler.scheduler - Added job "send_ton" to job store "default"
+base.py:181 #INFO     [2024-06-14 16:08:04,949] - apscheduler.scheduler - Scheduler started
+dispatcher.py:527 #INFO     [2024-06-14 16:08:05,320] - aiogram.dispatcher - Start polling
+dispatcher.py:341 #INFO     [2024-06-14 16:08:05,412] - aiogram.dispatcher - Run polling for bot @T_e_s_t_m_y_b_o_t_bot id=6689173506 - 'BOT_TestTest_1'
+handler_user.py:53 #INFO     [2024-06-14 16:08:11,998] - root - process_start_command_user
+handler_user.py:113 #INFO     [2024-06-14 16:08:12,034] - root - user_subscription: 998044883
+keyboard_user.py:13 #INFO     [2024-06-14 16:08:12,034] - root - keyboards_main
+dispatcher.py:172 #INFO     [2024-06-14 16:08:12,290] - aiogram.event - Update id=130576981 is handled. Duration 453 ms by bot id=6689173506
+handler_user.py:171 #INFO     [2024-06-14 16:08:22,033] - root - make_anketa: 998044883
+dispatcher.py:172 #INFO     [2024-06-14 16:08:22,143] - aiogram.event - Update id=130576982 is handled. Duration 171 ms by bot id=6689173506
+handler_user.py:178 #INFO     [2024-06-14 16:08:32,347] - root - get_anketa: 998044883
+keyboard_user.py:26 #INFO     [2024-06-14 16:08:32,347] - root - keyboards_main
+dispatcher.py:172 #INFO     [2024-06-14 16:08:32,575] - aiogram.event - Update id=130576983 is handled. Duration 328 ms by bot id=6689173506
+handler_user.py:185 #INFO     [2024-06-14 16:08:38,955] - root - confirm_anketa: 6689173506
+googlesheets.py:20 #INFO     [2024-06-14 16:08:39,299] - root - get_list_anketa
+googlesheets.py:14 #INFO     [2024-06-14 16:08:39,620] - root - append_order
+keyboard_user.py:37 #INFO     [2024-06-14 16:08:44,009] - root - on_work
+dispatcher.py:172 #INFO     [2024-06-14 16:08:44,332] - aiogram.event - Update id=130576984 is handled. Duration 5483 ms by bot id=6689173506
+keyboard_user.py:46 #INFO     [2024-06-14 16:09:10,241] - root - confirm_pay
+keyboard_user.py:46 #INFO     [2024-06-14 16:09:10,583] - root - confirm_pay
+keyboard_user.py:46 #INFO     [2024-06-14 16:09:10,848] - root - confirm_pay
+dispatcher.py:172 #INFO     [2024-06-14 16:09:11,186] - aiogram.event - Update id=130576985 is handled. Duration 1609 ms by bot id=6689173506
+handler_user.py:270 #INFO     [2024-06-14 16:09:30,699] - root - transfer_pay_to: 998044883
+googlesheets.py:35 #INFO     [2024-06-14 16:09:30,876] - root - update_status_anketa: 998044883
+googlesheets.py:35 #INFO     [2024-06-14 16:09:33,370] - root - update_status_anketa: 998044883
+dispatcher.py:172 #INFO     [2024-06-14 16:09:34,500] - aiogram.event - Update id=130576986 is handled. Duration 3952 ms by bot id=6689173506
+handler_user.py:270 #INFO     [2024-06-14 16:09:41,871] - root - transfer_pay_to: 998044883
+googlesheets.py:35 #INFO     [2024-06-14 16:09:42,083] - root - update_status_anketa: 998044883
+dispatcher.py:172 #INFO     [2024-06-14 16:09:43,304] - aiogram.event - Update id=130576987 is handled. Duration 1516 ms by bot id=6689173506
+handler_user.py:53 #INFO     [2024-06-14 16:10:39,005] - root - process_start_command_user
+handler_user.py:113 #INFO     [2024-06-14 16:10:39,007] - root - user_subscription: 998044883
+keyboard_user.py:13 #INFO     [2024-06-14 16:10:39,007] - root - keyboards_main
+dispatcher.py:172 #INFO     [2024-06-14 16:10:39,151] - aiogram.event - Update id=130576988 is handled. Duration 281 ms by bot id=6689173506
+handler_user.py:171 #INFO     [2024-06-14 16:10:48,807] - root - make_anketa: 998044883
+dispatcher.py:172 #INFO     [2024-06-14 16:10:48,881] - aiogram.event - Update id=130576989 is handled. Duration 108 ms by bot id=6689173506
+handler_user.py:178 #INFO     [2024-06-14 16:11:01,996] - root - get_anketa: 998044883
+keyboard_user.py:26 #INFO     [2024-06-14 16:11:01,996] - root - keyboards_main
+dispatcher.py:172 #INFO     [2024-06-14 16:11:02,146] - aiogram.event - Update id=130576990 is handled. Duration 406 ms by bot id=6689173506
+handler_user.py:185 #INFO     [2024-06-14 16:11:03,844] - root - confirm_anketa: 6689173506
+googlesheets.py:20 #INFO     [2024-06-14 16:11:03,986] - root - get_list_anketa
+googlesheets.py:14 #INFO     [2024-06-14 16:11:04,954] - root - append_order
+keyboard_user.py:37 #INFO     [2024-06-14 16:11:09,194] - root - on_work
+dispatcher.py:172 #INFO     [2024-06-14 16:11:09,412] - aiogram.event - Update id=130576991 is handled. Duration 5639 ms by bot id=6689173506
+keyboard_user.py:46 #INFO     [2024-06-14 16:11:12,064] - root - confirm_pay
+keyboard_user.py:46 #INFO     [2024-06-14 16:11:12,474] - root - confirm_pay
+keyboard_user.py:46 #INFO     [2024-06-14 16:11:12,856] - root - confirm_pay
+dispatcher.py:172 #INFO     [2024-06-14 16:11:13,140] - aiogram.event - Update id=130576992 is handled. Duration 1656 ms by bot id=6689173506
+handler_user.py:270 #INFO     [2024-06-14 16:11:37,050] - root - transfer_pay_to: 998044883
+googlesheets.py:35 #INFO     [2024-06-14 16:11:37,180] - root - update_status_anketa: 998044883
+googlesheets.py:35 #INFO     [2024-06-14 16:11:39,753] - root - update_status_anketa: 998044883
+dispatcher.py:172 #INFO     [2024-06-14 16:11:40,890] - aiogram.event - Update id=130576993 is handled. Duration 4063 ms by bot id=6689173506
+handler_user.py:270 #INFO     [2024-06-14 16:11:57,381] - root - transfer_pay_to: 998044883
+googlesheets.py:35 #INFO     [2024-06-14 16:11:57,434] - root - update_status_anketa: 998044883
+dispatcher.py:172 #INFO     [2024-06-14 16:11:58,043] - aiogram.event - Update id=130576994 is handled. Duration 813 ms by bot id=6689173506
+handler_user.py:142 #INFO     [2024-06-14 16:12:18,674] - root - get_list_user_referal: 1060834219
+dispatcher.py:172 #INFO     [2024-06-14 16:12:18,765] - aiogram.event - Update id=130576995 is handled. Duration 235 ms by bot id=6689173506
+handler_user.py:126 #INFO     [2024-06-14 16:12:46,936] - root - get_user_balance: 998044883
+dispatcher.py:172 #INFO     [2024-06-14 16:12:47,030] - aiogram.event - Update id=130576996 is handled. Duration 264 ms by bot id=6689173506
+handler_user.py:134 #INFO     [2024-06-14 16:13:05,253] - root - get_link_referal: 998044883
+dispatcher.py:172 #INFO     [2024-06-14 16:13:05,354] - aiogram.event - Update id=130576997 is handled. Duration 406 ms by bot id=6689173506
+handler_user.py:53 #INFO     [2024-06-14 16:13:17,044] - root - process_start_command_user
+handler_user.py:113 #INFO     [2024-06-14 16:13:17,138] - root - user_subscription: 1060834219
+keyboard_user.py:13 #INFO     [2024-06-14 16:13:17,139] - root - keyboards_main
+dispatcher.py:172 #INFO     [2024-06-14 16:13:17,239] - aiogram.event - Update id=130576998 is handled. Duration 250 ms by bot id=6689173506
+handler_user.py:53 #INFO     [2024-06-14 16:13:37,919] - root - process_start_command_user
+handler_user.py:113 #INFO     [2024-06-14 16:13:38,183] - root - user_subscription: 6663237590
+keyboard_user.py:13 #INFO     [2024-06-14 16:13:38,183] - root - keyboards_main
+dispatcher.py:172 #INFO     [2024-06-14 16:13:38,421] - aiogram.event - Update id=130576999 is handled. Duration 641 ms by bot id=6689173506
+handler_user.py:53 #INFO     [2024-06-14 16:13:50,184] - root - process_start_command_user
+handler_user.py:113 #INFO     [2024-06-14 16:13:50,332] - root - user_subscription: 6663237590
+keyboard_user.py:13 #INFO     [2024-06-14 16:13:50,332] - root - keyboards_main
+dispatcher.py:172 #INFO     [2024-06-14 16:13:50,551] - aiogram.event - Update id=130577000 is handled. Duration 422 ms by bot id=6689173506
+handler_user.py:142 #INFO     [2024-06-14 16:13:52,775] - root - get_list_user_referal: 6663237590
+dispatcher.py:172 #INFO     [2024-06-14 16:13:52,849] - aiogram.event - Update id=130577001 is handled. Duration 125 ms by bot id=6689173506
+dispatcher.py:554 #INFO     [2024-06-14 16:16:32,716] - aiogram.dispatcher - Polling stopped
+dispatcher.py:359 #INFO     [2024-06-14 16:16:32,973] - aiogram.dispatcher - Polling stopped for bot @T_e_s_t_m_y_b_o_t_bot id=6689173506 - 'BOT_TestTest_1'

@@ -9,7 +9,7 @@ from aiogram.fsm.state import State, StatesGroup, default_state
 
 from config_data.config import Config, load_config
 from database.requests import add_user, get_balance, get_referral_users, get_referral_link, can_add_ref_user, \
-    add_referral_user, _get_username_from_id, get_user_from_id
+    add_referral_user, _get_username_from_id, get_user_from_id, increase_ton_balance
 from keyboards.keyboard_user import keyboards_subscription, keyboards_main, yes_or_no, on_work, confirm
 from crypto.CryptoHelper import pay_ton_to, CodeErrorFactory
 from services.googlesheets import get_list_all_anketa, append_anketa, update_status_anketa
@@ -257,6 +257,7 @@ async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
     update_status_anketa(status='✅', telegram_id=user_to_pay)
     try:
         tr = await pay_ton_to(user_to_pay, 0.15)
+        await increase_ton_balance(tg_id=user_to_pay, s=0.15)
         if tr.status == 'completed':
             await callback.message.answer(
                 f'✅ Пользователю @{await _get_username_from_id(user_to_pay)} отправлено <strong>0.15 TON</strong>',

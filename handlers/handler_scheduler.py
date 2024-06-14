@@ -5,6 +5,7 @@ import logging
 from services.googlesheets import get_list_anketa, update_status_anketa
 from handlers.scheduler import send_ton
 from crypto.CryptoHelper import pay_ton_to
+from database.requests import increase_ton_balance
 
 router = Router()
 
@@ -39,6 +40,7 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
     info_anketa = get_list_anketa(id_anketa=id_anketa)
     await callback.answer(text=f'Начисление для пользователя @{info_anketa[2]} подтверждено', show_alert=True)
     await pay_ton_to(user_id=int(info_anketa[1]), amount=0.17)
+    await increase_ton_balance(tg_id=int(info_anketa[1]), s=0.17)
     update_status_anketa(status='💰', telegram_id=int(info_anketa[1]))
     await bot.send_message(chat_id=int(info_anketa[1]),
                            text='Вам было отправлено 0.15 TON\n\n'
@@ -46,5 +48,6 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
     if int(info_anketa[3]):
         print(info_anketa)
         await pay_ton_to(user_id=int(info_anketa[3]), amount=0.15)
+        await increase_ton_balance(tg_id=int(info_anketa[3]), s=0.15)
     await callback.answer()
     await send_ton(bot=bot)

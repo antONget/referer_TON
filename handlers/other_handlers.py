@@ -38,7 +38,7 @@ async def all_message(message: Message) -> None:
 
         if message.text == '/get_dbfile':
             logging.info(f'all_message message.admin./get_dbfile')
-            file_path = "database.db"
+            file_path = "database/db.sqlite3"
             await message.answer_document(FSInputFile(file_path))
 
         if message.text == '/get_listusers':

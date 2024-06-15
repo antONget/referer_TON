@@ -23,6 +23,8 @@ class User(Base):
     referral_users: Mapped[str] = mapped_column(String, default="")  # id_1,id_2,...
     referer_id: Mapped[int] = mapped_column(Integer, default=0)
     ton_balance: Mapped[int] = mapped_column(Float, default=0.0)
+    status: Mapped[str] = mapped_column(String(200), default="None")
+
 
 
 async def async_main():

@@ -7,6 +7,10 @@ from database.models import async_session
 
 
 import logging as lg
+from dataclasses import dataclass
+
+
+
 
 from sqlalchemy import select  # , update, delete
 
@@ -19,9 +23,9 @@ async def add_user(data: dict):
     add user to database:
         data : dict
         {
-            'id': int, 
-            'username': str (without @), 
-            'referral_link': str, 
+            'id': int,
+            'username': str (without @),
+            'referral_link': str,
             'referral_users': str ('123,1234,12345'),
             'ton_balance': int (default=0)
         }
@@ -174,6 +178,33 @@ async def get_user_from_id(user_id: int):
     async with async_session() as session:
         user = await session.scalar(select(User).where(User.id == user_id))
         return user
+
+
+
+'''       UPDATE       '''
+
+@dataclass
+class UserStatus:
+    passed = "None"
+    payed = "PAYED"
+    not_payed = "NOT_PAYED"
+    on_work = "ON_WORK"
+
+
+async def update_status(user_id: int, status: UserStatus):
+    async with async_session() as session:
+        user: User = await session.scalar(select(User).where(User.id == user_id))
+        if user:
+            user.status = status
+            await session.commit()
+
+
+from asyncio import run
+
+# run(update_status(123, UserStatus.on_work))
+
+
+
 
 # from asyncio import run, sleep
 

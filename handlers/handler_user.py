@@ -277,9 +277,13 @@ async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
     update_status_anketa(status='✅', telegram_id=user_to_pay)
     try:
         user = await get_user_from_id(user_to_pay)
+        print(user.status, UserStatus.payed)
         if user.status != UserStatus.payed:
+            print(f'user_to_pay: {user_to_pay}')
             tr = await pay_ton_to(user_to_pay, 0.15)
+            print(tr.status)
             await increase_ton_balance(tg_id=user_to_pay, s=0.15)
+            update_status_anketa(status='💰', telegram_id=user_to_pay)
             await update_status(user_to_pay, UserStatus.payed)
             if tr.status == 'completed':
                 await callback.message.answer(
@@ -301,9 +305,8 @@ async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
                                                     f' проверьте кошелек, скорее всего там недостаточно средств!')
                     except:
                         pass
-
-            if await get_user_from_id(user_id=user_to_pay):
-                referer = await get_user_from_id(user_to_pay)
+            referer = user.referer_id
+            if referer:
                 tr = await pay_ton_to(referer, 0.15)
                 if tr.status == 'completed':
                     await bot.send_message(chat_id=referer,

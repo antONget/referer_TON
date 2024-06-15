@@ -245,7 +245,7 @@ async def want_ton(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                         f'Подтвердите это изменение сведения в гугл таблице строка № {id_anketa}')
             await bot.send_message(chat_id=int(admin_id),
                                    text=f'Подтвердите начисление пользователю @{callback.from_user.username}!',
-                                   reply_markup=confirm(callback.message.chat.id))
+                                   reply_markup=confirm(user_id=callback.message.chat.id))
         except:
             pass
     await state.set_state(default_state)

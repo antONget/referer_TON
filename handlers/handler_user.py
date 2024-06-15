@@ -297,11 +297,28 @@ async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
                     try:
                         await bot.send_message(chat_id=int(admin_id),
                                                text=f'❗️Что-то пошло не так, и пользователю'
-                                                    f' {await _get_username_from_id(user_to_pay)} не пришло 0.15 TON,'
+                                                    f' @{await _get_username_from_id(user_to_pay)} не пришло 0.15 TON,'
                                                     f' проверьте кошелек, скорее всего там недостаточно средств!')
                     except:
                         pass
 
+            if await get_user_from_id(user_id=user_to_pay):
+                referer = await get_user_from_id(user_to_pay)
+                tr = await pay_ton_to(referer, 0.15)
+                if tr.status == 'completed':
+                    await bot.send_message(chat_id=referer,
+                                           text=f'Вам отправлено <strong>0.15 TON</strong> за приглашенного пользователя'
+                                                f' @{await _get_username_from_id(user_to_pay)}',
+                                           parse_mode='html')
+                else:
+                    for admin_id in config.tg_bot.admin_ids.split(','):
+                        try:
+                            await bot.send_message(chat_id=int(admin_id),
+                                                   text=f'❗️Что-то пошло не так, и пользователю @{await _get_username_from_id(referer)}'
+                                                        f' за приглашенного @{await _get_username_from_id(user_to_pay)} не пришло 0.15 TON,'
+                                                        f' проверьте кошелек, скорее всего там недостаточно средств!')
+                        except:
+                            pass
     except Exception as e:
         err = CodeErrorFactory(400)
 

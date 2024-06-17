@@ -30,7 +30,7 @@ async def send_ton(bot: Bot):
     # получаем список заполнивших анкету
     list_anketa = get_list_all_anketa()
     anketa = 0
-    # если список не пустой то ищем статус анкеты '✅'
+    # если список не пустой, то ищем статус анкеты '✅'
     if list_anketa:
         for item in list_anketa:
             print(item)

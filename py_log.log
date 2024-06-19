@@ -1,16 +1,9 @@
-referer_bot.py:26 #INFO     [2024-06-12 19:50:47,232] - __main__ - Starting bot
-dispatcher.py:527 #INFO     [2024-06-12 19:50:47,404] - aiogram.dispatcher - Start polling
-dispatcher.py:341 #INFO     [2024-06-12 19:50:47,452] - aiogram.dispatcher - Run polling for bot @T_e_s_t_m_y_b_o_t_bot id=6689173506 - 'BOT_TestTest_1'
-keyboard_user.py:7 #INFO     [2024-06-12 19:50:49,627] - root - keyboards_subscription
-other_handlers.py:20 #INFO     [2024-06-12 19:50:49,723] - root - all_calback: 6663237590
-dispatcher.py:172 #INFO     [2024-06-12 19:50:49,723] - aiogram.event - Update id=130576838 is handled. Duration 296 ms by bot id=6689173506
-keyboard_user.py:7 #INFO     [2024-06-12 19:50:51,595] - root - keyboards_subscription
-other_handlers.py:26 #INFO     [2024-06-12 19:50:51,794] - root - all_message
-dispatcher.py:172 #INFO     [2024-06-12 19:50:51,794] - aiogram.event - Update id=130576839 is handled. Duration 250 ms by bot id=6689173506
-keyboard_user.py:7 #INFO     [2024-06-12 19:50:52,698] - root - keyboards_subscription
-other_handlers.py:20 #INFO     [2024-06-12 19:50:52,899] - root - all_calback: 6663237590
-dispatcher.py:172 #INFO     [2024-06-12 19:50:52,900] - aiogram.event - Update id=130576840 is handled. Duration 390 ms by bot id=6689173506
-handler_user.py:75 #INFO     [2024-06-12 19:51:06,987] - root - process_press_subscription: 6663237590
-handler_user.py:89 #INFO     [2024-06-12 19:51:06,987] - root - user_subscription: 6663237590
-keyboard_user.py:14 #INFO     [2024-06-12 19:51:06,987] - root - keyboards_main
-dispatcher.py:172 #INFO     [2024-06-12 19:51:07,062] - aiogram.event - Update id=130576841 is handled. Duration 125 ms by bot id=6689173506
+referer_bot.py:25 #INFO     [2024-06-15 13:01:08,582] - __main__ - Starting bot
+base.py:454 #INFO     [2024-06-15 13:01:08,609] - apscheduler.scheduler - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+base.py:895 #INFO     [2024-06-15 13:01:08,610] - apscheduler.scheduler - Added job "send_ton" to job store "default"
+base.py:181 #INFO     [2024-06-15 13:01:08,610] - apscheduler.scheduler - Scheduler started
+dispatcher.py:527 #INFO     [2024-06-15 13:01:08,757] - aiogram.dispatcher - Start polling
+dispatcher.py:341 #INFO     [2024-06-15 13:01:08,799] - aiogram.dispatcher - Run polling for bot @RetailNavigator_Bot id=7396219007 - 'Бот Ритейл Навигатор'
+dispatcher.py:455 #WARNING  [2024-06-15 13:01:11,286] - aiogram.dispatcher - Received SIGINT signal
+dispatcher.py:359 #INFO     [2024-06-15 13:01:11,286] - aiogram.dispatcher - Polling stopped for bot @RetailNavigator_Bot id=7396219007 - 'Бот Ритейл Навигатор'
+dispatcher.py:554 #INFO     [2024-06-15 13:01:11,286] - aiogram.dispatcher - Polling stopped

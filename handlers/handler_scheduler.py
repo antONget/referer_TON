@@ -1,11 +1,12 @@
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, LinkPreviewOptions
 from aiogram import Bot, Router, F
 
 import logging
 from services.googlesheets import get_list_anketa, update_status_anketa
 from handlers.scheduler import send_ton
-from crypto.CryptoHelper import pay_ton_to
-from database.requests import increase_ton_balance, update_status, UserStatus, _get_username_from_id
+from TonCrypto.contract.CryptoHelper import TonWallet
+from database.requests import increase_ton_balance, update_status, UserStatus, _get_username_from_id,\
+    update_user_ton_addr, get_user_ton_addr_by_id
 
 router = Router()
 
@@ -15,7 +16,7 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
     """
     Отмена начисления вознаграждения, изменяем статус анкеты и запускаем поиск нового события
     """
-    logging.info(f'process_cancel_pay: {callback.message.chat.id}')
+    logging.info(f'process_cancel_pay: {callback.message.chat.id}-{callback.data}')
     await bot.delete_message(chat_id=callback.message.chat.id,
                              message_id=callback.message.message_id)
     id_anketa = int(callback.data.split('_')[2])
@@ -36,34 +37,42 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
     """
     Подтверждение начисления вознаграждения пользователю и его рефереру, запуск поиска нового события
     """
-    logging.info(f'process_cancel_pay: {callback.message.chat.id}')
+    logging.info(f'process_cancel_pay: {callback.message.chat.id}-{callback.data}')
     await bot.delete_message(chat_id=callback.message.chat.id,
                              message_id=callback.message.message_id)
     id_anketa = int(callback.data.split('_')[2])
     info_anketa = get_list_anketa(id_anketa=id_anketa)
     await callback.answer(text=f'Начисление для пользователя @{info_anketa[2]} подтверждено', show_alert=True)
-    tr = await pay_ton_to(user_id=int(info_anketa[1]), amount=0.17)
-    await increase_ton_balance(tg_id=int(info_anketa[1]), s=0.17)
-    update_status_anketa(status='💰', telegram_id=int(info_anketa[1]))
-    await update_status(int(info_anketa[1]), UserStatus.payed)
-    if tr.status == 'completed':
+    user_id = info_anketa[1]
+    user_addr = await get_user_ton_addr_by_id(user_id)
+
+    tr = await TonWallet.transfer(amount=0.001, to_addr=user_addr)
+    if tr == 'ok':
+        await increase_ton_balance(tg_id=int(info_anketa[1]), s=0.001)
+        update_status_anketa(status='💰', telegram_id=int(info_anketa[1]))
+        await update_status(int(info_anketa[1]), UserStatus.payed)
+
         try:
             await bot.send_message(chat_id=int(info_anketa[1]),
-                                   text='Вам было отправлено 0.15 TON\n\n'
-                                        'Проверьте ваш кошелек @CryptoBot')
+                                   text=f'Вам было отправлено 0.001 TON\n\n'
+                                        f'Проверьте ваш кошелек'
+                                        f' <a href="https://tonscan.org/address/{user_addr}>кошелек.</a>',
+                                   parse_mode='html',
+                                   link_preview_options=LinkPreviewOptions(is_disabled=True))
         except:
             pass
     if int(info_anketa[3]):
-        print(info_anketa)
-        tr = await pay_ton_to(user_id=int(info_anketa[3]), amount=0.15)
-        await increase_ton_balance(tg_id=int(info_anketa[3]), s=0.15)
-    if tr.status == 'completed':
-        try:
-            await bot.send_message(chat_id=int(info_anketa[3]),
-                                   text=f'Вам отправлено <strong>0.15 TON</strong> за приглашенного пользователя'
-                                        f' @{await _get_username_from_id(int(info_anketa[1]))}',
-                                   parse_mode='html')
-        except:
-            pass
+        tr = await TonWallet.transfer(amount=0.001, to_addr=user_addr)
+        if tr == 'ok':
+
+            await increase_ton_balance(tg_id=int(info_anketa[3]), s=0.001)
+
+            try:
+                await bot.send_message(chat_id=int(info_anketa[3]),
+                                       text=f'Вам отправлено <strong>0.15 TON</strong> за приглашенного пользователя'
+                                            f' @{await _get_username_from_id(int(info_anketa[1]))}',
+                                       parse_mode='html')
+            except:
+                pass
     await callback.answer()
     await send_ton(bot=bot)

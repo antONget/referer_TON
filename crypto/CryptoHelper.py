@@ -2,6 +2,7 @@ from aiocryptopay import AioCryptoPay, Networks
 from aiocryptopay.api import Assets, Balance, Check, Invoice, Transfer
 from aiocryptopay.exceptions import CodeErrorFactory
 # from settings.config import CRYPTO_TOKEN
+import logging
 
 
 from asyncio import run
@@ -13,8 +14,8 @@ CRYPTO_TOKEN = "14190:AA2b4nBwnFXoIMANNLS6kCvDAERb9Kh99Nq"
 CryptoHelper : AioCryptoPay = AioCryptoPay(token=CRYPTO_TOKEN, network=Networks.TEST_NET)
 
 
-
 async def pay_ton_to(user_id: int, amount: int | float) -> Transfer:
+    logging.info(f'pay_ton_to| user_id: {user_id}, amount:{amount}')
     tr = await CryptoHelper.transfer(user_id=user_id, asset=Assets.TON, amount=amount,  spend_id=datetime.now().strftime("%d/%m/%Y, %H:%M:%S"))  # method to send coins to user
     await CryptoHelper.close()
     return tr
@@ -73,7 +74,7 @@ async def create_invoice_link(amount: int | float):
 
 
 
-# run(pay_ton_to(1060834219, 0.14))
+# run(pay_ton_to(5443784834, 0.14))
 
 
 # print(run(get_paid_invoices()))

@@ -22,6 +22,28 @@ def keyboards_main() -> ReplyKeyboardMarkup:
     return keyboard
 
 
+def keyboards_get_contact() -> ReplyKeyboardMarkup:
+    logging.info("keyboards_get_contact")
+    button_1 = KeyboardButton(text='Отправить свой контакт ☎️',
+                              request_contact=True)
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[[button_1]],
+        resize_keyboard=True
+    )
+    return keyboard
+
+
+def keyboard_confirm_phone() -> None:
+    logging.info("keyboard_confirm_phone")
+    button_1 = InlineKeyboardButton(text='Верно',
+                                    callback_data='confirm_phone')
+    button_2 = InlineKeyboardButton(text='Изменить',
+                                    callback_data='getphone_back')
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[[button_1], [button_2]],
+    )
+    return keyboard
+
 def yes_or_no() -> ReplyKeyboardMarkup:
     logging.info("keyboards_main")
     button_1 = InlineKeyboardButton(text='Да', callback_data='linkanketa_confirm')
@@ -29,6 +51,26 @@ def yes_or_no() -> ReplyKeyboardMarkup:
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[[button_1, button_2]]
+    )
+    return keyboard
+
+
+def yes_or_no_addr() -> ReplyKeyboardMarkup:
+    logging.info("confirm addr kb")
+    button_1 = InlineKeyboardButton(text='Да', callback_data='address_confirm')
+    button_2 = InlineKeyboardButton(text='Нет', callback_data='address_cancel')
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[[button_1, button_2]]
+    )
+    return keyboard
+
+
+
+def pass_the_state() -> ReplyKeyboardMarkup:
+    logging.info("pass_the_state")
+    button_1 = InlineKeyboardButton(text='Пропустить', callback_data='pass_wallet')
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[[button_1]],
     )
     return keyboard
 

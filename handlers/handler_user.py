@@ -1,26 +1,41 @@
 from aiogram import Router, F, Bot
-from aiogram.types import Message, CallbackQuery, ChatMemberMember, ChatMemberAdministrator, ChatMemberOwner
-from aiogram.filters import CommandStart, Command, CommandObject
+from aiogram.types import Message, CallbackQuery, ChatMemberMember, ChatMemberAdministrator, ChatMemberOwner,\
+    LinkPreviewOptions, ReplyKeyboardRemove
+from aiogram.filters import CommandStart, Command, CommandObject, or_f
 from aiogram.utils.deep_linking import create_start_link, decode_payload
-from aiogram.filters import Filter
+from aiogram.filters import Filter, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup, default_state
 
 
 from config_data.config import Config, load_config
 from database.requests import add_user, get_balance, get_referral_users, get_referral_link, \
-    add_referral_user, _get_username_from_id, get_user_from_id, increase_ton_balance, update_status, UserStatus
-from keyboards.keyboard_user import keyboards_subscription, keyboards_main, yes_or_no, on_work, confirm
-from crypto.CryptoHelper import pay_ton_to, CodeErrorFactory
+    add_referral_user, _get_username_from_id, get_user_from_id, increase_ton_balance, update_status, UserStatus,\
+    get_user_ton_addr_by_id, update_user_ton_addr
+from keyboards.keyboard_user import keyboards_subscription, keyboards_main, yes_or_no, on_work, confirm, yes_or_no_addr, pass_the_state, keyboards_get_contact, keyboard_confirm_phone
+
+from TonCrypto.contract.CryptoHelper import TonWallet, check_valid_addr
+
 from services.googlesheets import get_list_all_anketa, append_anketa, update_status_anketa
 
 import logging
 import asyncio
-
+import re
 
 router = Router()
 user_dict = {}
 config: Config = load_config()
+
+
+def validate_russian_phone_number(phone_number):
+    # Паттерн для российских номеров телефона
+    # Российские номера могут начинаться с +7, 8, или без кода страны
+    pattern = re.compile(r'^(\+7|8|7)?(\d{10})$')
+
+    # Проверка соответствия паттерну
+    match = pattern.match(phone_number)
+
+    return bool(match)
 
 
 class ChannelProtect(Filter):
@@ -39,7 +54,7 @@ class ChannelProtect(Filter):
                                          parse_mode='html')
         else:
             await message.answer(text=f'Чтобы получать вознаграждения за приглашенных пользователей, а самому найти'
-                                      f' вакансию своей мечты подпишись на канал'
+                                      f' вакансию своей мечты подпишись на канал '
                                       f'<a href="{config.tg_bot.channel_name}">{config.tg_bot.channel_name}</a>',
                                  reply_markup=keyboards_subscription(),
                                  parse_mode='html')
@@ -47,35 +62,15 @@ class ChannelProtect(Filter):
 
 
 @router.message(ChannelProtect(), CommandStart())
-async def process_start_command_user(message: Message, command: CommandObject, bot: Bot) -> None:
+async def process_start_command_user(message: Message, command: CommandObject, bot: Bot, state: FSMContext) -> None:
     logging.info("process_start_command_user")
+    await state.set_state(default_state)
     args = command.args
     if args:
         referrer_id = int(decode_payload(args))
-        print(referrer_id)
+
         if not await get_user_from_id(user_id=message.from_user.id):
             await add_referral_user(main_user_id=referrer_id, referral_user_id=message.from_user.id)
-            #
-            # try:
-            #     tr = await pay_ton_to(referrer_id, 0.15)
-            #     if tr.status == 'completed':
-            #         await bot.send_message(chat_id=referrer_id,
-            #                                text=f'💸 По вашей ссылке перешел @{message.from_user.username},'
-            #                                     f' вам было начислено 0.15 TON \n@CryptoBot')
-            #     else:
-            #         for admin_id in config.tg_bot.admin_ids.split(','):
-            #             await bot.send_message(chat_id=admin_id,
-            #                                    text=f'❗️Что-то пошло не так, и пользователю'
-            #                                         f' {await _get_username_from_id(referrer_id)} не пришло 0.15 TON'
-            #                                         f' за приглашенного @{message.from_user.username}')
-            #
-            # except Exception as e:
-            #     logging.error(e)
-            #     for admin_id in config.tg_bot.admin_ids.split(','):
-            #         await bot.send_message(chat_id=admin_id,
-            #                                text=f'❗️Что-то пошло не так, и пользователю'
-            #                                     f' {await _get_username_from_id(referrer_id)} не пришло 0.15 TON'
-            #                                     f' за приглашенного @{message.from_user.username}')
 
             link = await create_start_link(bot=bot, payload=str(message.from_user.id), encode=True)
             if message.from_user.username:
@@ -104,8 +99,15 @@ async def process_start_command_user(message: Message, command: CommandObject, b
 
 
 @router.callback_query(ChannelProtect(), F.data == 'subscription')
-async def process_press_subscription(callback: CallbackQuery):
+async def process_press_subscription(callback: CallbackQuery, bot: Bot):
     logging.info(f'process_press_subscription: {callback.message.chat.id}')
+    link = await create_start_link(bot=bot, payload=str(callback.from_user.id), encode=True)
+    if callback.from_user.username:
+        await add_user(
+            {"id": callback.from_user.id, "username": callback.from_user.username, "referral_link": link})
+    else:
+        await add_user(
+            {"id": callback.from_user.id, "username": f"None-{callback.from_user.id}", "referral_link": link})
     await callback.answer('')
     await user_subscription(message=callback)
 
@@ -114,15 +116,11 @@ async def user_subscription(message: Message | CallbackQuery):
     logging.info(f'user_subscription: {message.from_user.id}')
     if isinstance(message, Message):
         await message.answer(text=f'Привет, {message.from_user.first_name} 👋\n'
-                                  f'Бот позволяет ....'
-                                  f'Для получения вознаграждения в TON на ваш счет телеграм обязательно запустите и'
-                                  f' не блокируйте бота @CryptoTestnetBot',
+                                  f'Бот позволяет ....',
                              reply_markup=keyboards_main())
     else:
         await message.message.answer(text=f'Привет, {message.from_user.first_name} 👋\n'
-                                          f'Бот позволяет ....'
-                                          f'Для получения вознаграждения в TON на ваш счет телеграм обязательно'
-                                          f' запустите и не блокируйте бота @CryptoTestnetBot',
+                                          f'Бот позволяет ....',
                                      reply_markup=keyboards_main())
 
 
@@ -161,21 +159,115 @@ async def get_list_referrals(message: Message):
 
 class UserAnketa(StatesGroup):
     Anketa = State()
+    username = State()
+    phone = State()
+    city = State()
+    address = State()
+    confirm_addr = State()
     confirm = State()
     id = State()
 
 
 @router.message(Command('cancel'))
 async def cancel(message: Message, state: FSMContext):
-    await message.answer('Отмена')
+    await message.answer(text='Отмена',
+                         reply_markup=keyboards_main())
     await state.clear()
 
 
 @router.message(F.text == 'Заполнить анкету на вакансию')
 async def make_anketa(message: Message, state: FSMContext):
     logging.info(f'make_anketa: {message.from_user.id}')
+    await message.answer(text='Как вас зовут?')
+    await state.set_state(UserAnketa.username)
+
+
+@router.message(F.text, UserAnketa.username)
+async def anketa_get_username(message: Message, state: FSMContext):
+    logging.info(f'anketa_get_username: {message.from_user.id}')
+    username = message.text
+    await state.update_data(username=username)
+    await message.answer(text=f'Рад вас приветствовать {username}. Поделитесь вашим номером телефона ☎️',
+                         reply_markup=keyboards_get_contact())
+    await state.set_state(UserAnketa.phone)
+
+
+@router.message(or_f(F.text, F.contact), StateFilter(UserAnketa.phone))
+async def process_validate_russian_phone_number(message: Message, state: FSMContext) -> None:
+    logging.info("process_start_command_user")
+    if message.contact:
+        phone = str(message.contact.phone_number)
+    else:
+        phone = message.text
+        if not validate_russian_phone_number(phone):
+            await message.answer(text="Неверный формат номера. Повторите ввод, например 89991112222:")
+            return
+    await state.update_data(phone=phone)
+    await state.set_state(default_state)
+    await message.answer(text=f'Записываю, {phone}. Верно?',
+                         reply_markup=keyboard_confirm_phone())
+
+
+@router.callback_query(F.data == 'getphone_back')
+async def process_getphone_back(callback: CallbackQuery, state: FSMContext) -> None:
+    logging.info(f'process_getphone_back: {callback.message.chat.id}')
+    await callback.message.answer(text=f'Поделитесь вашим номером телефона ☎️',
+                                  reply_markup=keyboards_get_contact())
+    await state.set_state(UserAnketa.phone)
+
+
+@router.callback_query(F.data == 'confirm_phone')
+async def process_confirm_phone(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
+    logging.info(f'process_confirm_phone: {callback.message.chat.id}')
+    await callback.message.answer(text=f'Из какого вы города?',
+                                  reply_markup=ReplyKeyboardRemove())
+    await state.set_state(UserAnketa.city)
+
+
+@router.message(F.text, StateFilter(UserAnketa.city))
+async def make_anketa(message: Message, state: FSMContext):
+    logging.info(f'make_anketa: {message.from_user.id}')
+    await state.update_data(city=message.text)
+    await message.answer(text='Пришлите сюда ваш адрес кошелька для вознаграждения, в случае выхода на работу. \n\n'
+                              'Также вы можете воспользоваться реферальной программой и получать TON за'
+                              ' приглашенных пользователей\n\n/cancel для отмены',
+                         reply_markup=pass_the_state())
+    await state.set_state(UserAnketa.address)
+
+@router.callback_query(F.data == 'pass_wallet')
+async def pass_state(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer('Пришлите ссылку на пост с вакансией из канала!\n\n/cancel - отмена')
     await state.set_state(UserAnketa.Anketa)
-    await message.answer('Пришлите ссылку на пост с вакансией из канала!\n\n/cancel для отмены')
+
+
+@router.message(UserAnketa.address)
+async def confirm_address(message: Message, state: FSMContext):
+    logging.info(f'confirm_address: {message.from_user.id}')
+    await state.update_data(address=message.text)
+    if await check_valid_addr(message.text):
+        await message.answer(text=f'Ваш адрес: <a href="https://testnet.tonviewer.com/{message.text}">{message.text}</a>\n\nПодтверждаете?',
+                             parse_mode='html',
+                             reply_markup=yes_or_no_addr(),
+                             link_preview_options=LinkPreviewOptions(is_disabled=True))
+    else:
+        await message.answer(text=f'Данный адрес не валиден! Отправьте еще раз:\n\n/cancel - отмена')
+
+
+@router.callback_query(F.data.startswith('address_'))
+async def confirm_addres_yes_or_no(callback: CallbackQuery, state: FSMContext):
+    logging.info(f'confirm_addres_y_n: {callback.from_user.id}')
+    data = await state.get_data()
+    answer = callback.data.split('_')
+    if answer[1] == "confirm":
+        await update_user_ton_addr(callback.from_user.id, data['address'])
+        await callback.message.answer(text=f'Ваш адрес был добавлен!',
+                                      reply_markup=keyboards_main())
+        await callback.message.answer('Пришлите ссылку на пост с вакансией из канала!\n\n/cancel - отмена')
+        await state.set_state(UserAnketa.Anketa)
+    else:
+        await callback.message.answer(text=f'Ваш адрес не был добавлен! Отправьте его снова!',
+                                      reply_markup=keyboards_main())
+        await state.set_state(UserAnketa.address)
 
 
 @router.message(UserAnketa.Anketa)
@@ -197,6 +289,9 @@ async def confirm_anketa(callback: CallbackQuery, state: FSMContext, bot: Bot):
         await state.update_data(id_anketa=id_anketa)
         user_dict[callback.message.chat.id] = await state.get_data()
         anketa = user_dict[callback.message.chat.id]['anketa']
+        username = user_dict[callback.message.chat.id]['username']
+        phone = user_dict[callback.message.chat.id]['phone']
+        city = user_dict[callback.message.chat.id]['city']
         user = await get_user_from_id(user_id=callback.message.chat.id)
         if user.referer_id != 0:
             referer = await get_user_from_id(user_id=user.referer_id)
@@ -210,6 +305,9 @@ async def confirm_anketa(callback: CallbackQuery, state: FSMContext, bot: Bot):
                       username_refer=callback.from_user.username,
                       id_telegram_referer=id_telegram_referer,
                       username_referer=username_referer,
+                      username=username,
+                      phone=phone,
+                      city=city,
                       link_post=anketa,
                       status="⚠️")
         await asyncio.sleep(3)
@@ -275,45 +373,59 @@ async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
                              message_id=callback.message.message_id)
     user_to_pay = int(callback.data.split('_')[-1])
     update_status_anketa(status='✅', telegram_id=user_to_pay)
+    user_ton_addr = await get_user_ton_addr_by_id(user_to_pay)
     try:
         user = await get_user_from_id(user_to_pay)
-        print(user.status, UserStatus.payed)
         if user.status != UserStatus.payed:
-            print(f'user_to_pay: {user_to_pay}')
-            tr = await pay_ton_to(user_to_pay, 0.15)
-            print(tr.status)
-            await increase_ton_balance(tg_id=user_to_pay, s=0.15)
-            update_status_anketa(status='💰', telegram_id=user_to_pay)
-            await update_status(user_to_pay, UserStatus.payed)
-            if tr.status == 'completed':
+            transaction = await TonWallet.transfer(amount=0.001,
+                                                   to_addr=user_ton_addr)
+            if transaction == 'ok':
+                await increase_ton_balance(tg_id=user_to_pay, s=0.001)
+                update_status_anketa(status='💰', telegram_id=user_to_pay)
+                await update_status(user_to_pay, UserStatus.payed)
+
                 await callback.message.answer(
-                    f'✅ Пользователю @{await _get_username_from_id(user_to_pay)} отправлено <strong>0.15 TON</strong>',
+                    f'✅ Пользователю @{await _get_username_from_id(user_to_pay)} отправлено <strong>0.001 TON</strong>',
                     parse_mode='html')
                 try:
                     await bot.send_message(chat_id=user_to_pay,
-                                           text='Вам было отправлено 0.15 TON\n\n'
-                                                'Проверьте ваш кошелек @CryptoBot')
+                                           text=f'Вам было отправлено 0.001 TON\n\n'
+                                                f'Проверьте ваш кошелек.'
+                                                f' <a href="https://tonscan.org/address/{user_ton_addr}>кошелек.</a>',
+                                           parse_mode='html',
+                                           link_preview_options=LinkPreviewOptions(is_disabled=True))
                 except:
                     pass
                 update_status_anketa(status='💰', telegram_id=user_to_pay)
-            else:
+            elif transaction == 'not enough money':
                 for admin_id in config.tg_bot.admin_ids.split(','):
                     try:
                         await bot.send_message(chat_id=int(admin_id),
                                                text=f'❗️Что-то пошло не так, и пользователю'
-                                                    f' @{await _get_username_from_id(user_to_pay)} не пришло 0.15 TON,'
+                                                    f' @{await _get_username_from_id(user_to_pay)} не пришло 0.001 TON,'
                                                     f' проверьте кошелек, скорее всего там недостаточно средств!')
+                    except:
+                        pass
+            elif transaction.startswith('error'):
+                for admin_id in config.tg_bot.admin_ids.split(','):
+                    try:
+                        await bot.send_message(chat_id=int(admin_id),
+                                               text=f'❗️Что-то пошло не так, и пользователю'
+                                                    f' @{await _get_username_from_id(user_to_pay)} не пришло 0.001 TON,'
+                                                    f' что-то пошло не так! Проверьте списание средств!')
                     except:
                         pass
             referer = user.referer_id
             if referer:
-                tr = await pay_ton_to(referer, 0.15)
-                if tr.status == 'completed':
+                transaction = await TonWallet.transfer(amount=0.001,
+                                                       to_addr=user_ton_addr)
+                if transaction == 'ok':
+                    await increase_ton_balance(tg_id=user_to_pay, s=0.001)
                     await bot.send_message(chat_id=referer,
-                                           text=f'Вам отправлено <strong>0.15 TON</strong> за приглашенного пользователя'
+                                           text=f'Вам отправлено <strong>0.001 TON</strong> за приглашенного пользователя'
                                                 f' @{await _get_username_from_id(user_to_pay)}',
                                            parse_mode='html')
-                else:
+                elif transaction == 'not enough money':
                     for admin_id in config.tg_bot.admin_ids.split(','):
                         try:
                             await bot.send_message(chat_id=int(admin_id),
@@ -322,18 +434,20 @@ async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
                                                         f' проверьте кошелек, скорее всего там недостаточно средств!')
                         except:
                             pass
+                elif transaction.startswith('error'):
+                    for admin_id in config.tg_bot.admin_ids.split(','):
+                        try:
+                            await bot.send_message(chat_id=int(admin_id),
+                                                   text=f'❗️Что-то пошло не так, и пользователю'
+                                                        f' @{await _get_username_from_id(user_to_pay)} не пришло 0.001 TON,'
+                                                        f' что-то пошло не так! Проверьте списание средств!')
+                        except:
+                            pass
+        else:
+            await callback.message.answer(text=f'Пользователь уже получил вознаграждение!')
     except Exception as e:
-        err = CodeErrorFactory(400)
+        logging.error(f'ERROR: {e}')
 
-        if e.args[0] == err.args[0]:
-            for admin_id in config.tg_bot.admin_ids.split(','):
-                try:
-                    await bot.send_message(chat_id=int(admin_id),
-                                           text=f'❗️Недостаточно средств! Пользователю'
-                                                f' @{await _get_username_from_id(user_to_pay)} не пришло 0.15 TON'
-                                                f' за приглашенного реферала')
-                except:
-                    pass
     await callback.answer()
 
 

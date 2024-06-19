@@ -1,7 +1,7 @@
 from database.models import User
 from database.models import async_session
 
-# Для тестов функций надо раскоментить, а выше закоменть
+# Для тестов функций надо раскоментить, а выше закомменть
 # from models import User
 # from models import async_session
 
@@ -180,6 +180,14 @@ async def get_user_from_id(user_id: int):
         return user
 
 
+async def get_user_ton_addr_by_id(user_id: int):
+    async with async_session() as session:
+        user: User = await session.scalar(select(User).where(User.id == user_id))
+        if user:
+            return user.crypto_ton_addr
+        else:
+            return None
+
 
 '''       UPDATE       '''
 
@@ -199,26 +207,10 @@ async def update_status(user_id: int, status: UserStatus):
             await session.commit()
 
 
-from asyncio import run
+async def update_user_ton_addr(user_id: int, user_addr: str):
+    async with async_session() as session:
+        user: User = await session.scalar(select(User).where(User.id == user_id))
+        if user:
+            user.crypto_ton_addr = user_addr
+            await session.commit()
 
-# run(update_status(123, UserStatus.on_work))
-
-
-
-
-# from asyncio import run, sleep
-
-
-# print(run(can_add_ref_user(101)))
-# print([ i.username for i in run(get_all_users())])
-
-# run(add_user({"id":6663237590, "username":"paul", "referral_link":'https://t.me/PBAsync', 'referral_users':'123,1234,12345'}))
-# print(run(get_balance(6663237590)))
-# print(run(get_referral_link(1234)))
-# print(run(get_referral_users(6663237590)))
-# print(run(get_referral_users(1234)))
-# run(add_referral_user(6663237590, 6663237590))
-# run(increase_ton_balance(6663237590, 0.0005))
-
-
-# print(format(0.0005, '.4f'))

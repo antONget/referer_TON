@@ -16,8 +16,8 @@ async def main():
     # Конфигурируем логирование
     logging.basicConfig(
         level=logging.INFO,
-        filename="py_log.log",
-        filemode='w',
+        # filename="py_log.log",
+        # filemode='w',
         format='%(filename)s:%(lineno)d #%(levelname)-8s '
                '[%(asctime)s] - %(name)s - %(message)s')
 
@@ -32,7 +32,7 @@ async def main():
     dp = Dispatcher()
     scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
     # # понедельник
-    scheduler.add_job(send_ton, 'cron', hour=10, minute=0, args=(bot,))
+    scheduler.add_job(send_ton, 'cron', hour=20, minute=20, args=(bot,))
     scheduler.start()
     # Регистрируем router в диспетчере
     dp.include_router(handler_user.router)

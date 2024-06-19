@@ -444,7 +444,8 @@ async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
                         except:
                             pass
         else:
-            await callback.message.answer(text=f'Пользователь уже получил вознаграждение!')
+            await callback.answer(text=f'Пользователь уже получил вознаграждение!',
+                                  show_alert=True)
     except Exception as e:
         logging.error(f'ERROR: {e}')
 

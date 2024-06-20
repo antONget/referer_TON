@@ -44,8 +44,18 @@ def keyboard_confirm_phone() -> None:
     )
     return keyboard
 
+
+def keyboard_cancel() -> ReplyKeyboardMarkup:
+    logging.info("yes_or_no")
+    button_1 = InlineKeyboardButton(text='Отмена',
+                                    callback_data='/cancel')
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[[button_1]]
+    )
+    return keyboard
+
 def yes_or_no() -> ReplyKeyboardMarkup:
-    logging.info("keyboards_main")
+    logging.info("yes_or_no")
     button_1 = InlineKeyboardButton(text='Да', callback_data='linkanketa_confirm')
     button_2 = InlineKeyboardButton(text='Нет', callback_data='linkanketa_cancel')
 
@@ -65,12 +75,12 @@ def yes_or_no_addr() -> ReplyKeyboardMarkup:
     return keyboard
 
 
-
 def pass_the_state() -> ReplyKeyboardMarkup:
     logging.info("pass_the_state")
     button_1 = InlineKeyboardButton(text='Пропустить', callback_data='pass_wallet')
+    button_2 = InlineKeyboardButton(text='Как создать кошелек?', callback_data='create_wallet')
     keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[[button_1]],
+        inline_keyboard=[[button_1], [button_2]],
     )
     return keyboard
 

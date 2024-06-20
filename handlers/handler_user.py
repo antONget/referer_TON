@@ -12,7 +12,8 @@ from config_data.config import Config, load_config
 from database.requests import add_user, get_balance, get_referral_users, get_referral_link, \
     add_referral_user, _get_username_from_id, get_user_from_id, increase_ton_balance, update_status, UserStatus,\
     get_user_ton_addr_by_id, update_user_ton_addr
-from keyboards.keyboard_user import keyboards_subscription, keyboards_main, yes_or_no, on_work, confirm, yes_or_no_addr, pass_the_state, keyboards_get_contact, keyboard_confirm_phone
+from keyboards.keyboard_user import keyboards_subscription, keyboards_main, yes_or_no, on_work, confirm, yes_or_no_addr,\
+    pass_the_state, keyboards_get_contact, keyboard_confirm_phone, keyboard_cancel
 
 from TonCrypto.contract.CryptoHelper import TonWallet, check_valid_addr
 
@@ -115,13 +116,29 @@ async def process_press_subscription(callback: CallbackQuery, bot: Bot):
 async def user_subscription(message: Message | CallbackQuery):
     logging.info(f'user_subscription: {message.from_user.id}')
     if isinstance(message, Message):
-        await message.answer(text=f'Привет, {message.from_user.first_name} 👋\n'
-                                  f'Бот позволяет ....',
-                             reply_markup=keyboards_main())
+        await message.answer_photo(
+            photo='AgACAgIAAxkBAAIG2mZ0W586nnqgd8vmaszoV-6YWiMzAAKj2zEbeLygS5B-4alYFVH_AQADAgADeAADNQQ',
+            caption=f'Привет! 👋\n'
+                    f'Это бот реферальной системы.\n\n'
+                    f'Тут вы сможете:\n'
+                    f'✅заполнить анкету на вакансию;\n'
+                    f'✅скопировать свою реферальную ссылку и пригласить по ней друга;\n'
+                    f'✅узнать свой баланс;\n'
+                    f'✅посмотреть список приглашенных людей.',
+            reply_markup=keyboards_main()
+        )
     else:
-        await message.message.answer(text=f'Привет, {message.from_user.first_name} 👋\n'
-                                          f'Бот позволяет ....',
-                                     reply_markup=keyboards_main())
+        await message.answer_photo(
+            photo='AgACAgIAAxkBAAIG2mZ0W586nnqgd8vmaszoV-6YWiMzAAKj2zEbeLygS5B-4alYFVH_AQADAgADeAADNQQ',
+            caption=f'Привет! 👋\n'
+                    f'Это бот реферальной системы.\n\n'
+                    f'Тут вы сможете:\n'
+                    f'✅заполнить анкету на вакансию;\n'
+                    f'✅скопировать свою реферальную ссылку и пригласить по ней друга;\n'
+                    f'✅узнать свой баланс;\n'
+                    f'✅посмотреть список приглашенных людей.',
+            reply_markup=keyboards_main()
+        )
 
 
 @router.message(F.text == 'Баланс')
@@ -170,8 +187,18 @@ class UserAnketa(StatesGroup):
 
 @router.message(Command('cancel'))
 async def cancel(message: Message, state: FSMContext):
-    await message.answer(text='Отмена',
+    await message.answer(text='Действие отменено.',
                          reply_markup=keyboards_main())
+    await state.clear()
+
+
+@router.callback_query(F.data == '/cancel')
+async def cancel_cq(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    logging.info(f'cancel_cq: {callback.message.from_user.id}')
+    await callback.message.answer(text='Действие отменено.',
+                                  reply_markup=keyboards_main())
+    await bot.delete_message(chat_id=callback.message.chat.id,
+                             message_id=callback.message.message_id)
     await state.clear()
 
 
@@ -228,15 +255,29 @@ async def process_confirm_phone(callback: CallbackQuery, state: FSMContext, bot:
 async def make_anketa(message: Message, state: FSMContext):
     logging.info(f'make_anketa: {message.from_user.id}')
     await state.update_data(city=message.text)
-    await message.answer(text='Пришлите сюда ваш адрес кошелька для вознаграждения, в случае выхода на работу. \n\n'
-                              'Также вы можете воспользоваться реферальной программой и получать TON за'
-                              ' приглашенных пользователей\n\n/cancel для отмены',
+    await message.answer(text=f'Отправьте адрес вашего электронного кошелька для вознаграждения, '
+                              f'в случае выхода на работу.\n\n'
+                              f'Также, вы можете воспользоваться реферальной программой и получать TON за приглашенных'
+                              f' пользователей.\n\n'
+                              f'/cancel для отмены',
                          reply_markup=pass_the_state())
     await state.set_state(UserAnketa.address)
 
+
+@router.callback_query(F.data == 'create_wallet')
+async def create_wallet(callback: CallbackQuery, state: FSMContext):
+    logging.info(f'create_wallet: {callback.message.from_user.id}')
+    await callback.message.answer(text=f'Здесь будет добавлена инструкция как получить кошелек')
+    await asyncio.sleep(5)
+    await make_anketa(message=callback.message, state=state)
+
+
 @router.callback_query(F.data == 'pass_wallet')
 async def pass_state(callback: CallbackQuery, state: FSMContext):
-    await callback.message.answer('Пришлите ссылку на пост с вакансией из канала!\n\n/cancel - отмена')
+    logging.info(f'pass_state: {callback.message.from_user.id}')
+    await callback.message.answer('Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - '
+                                  'канале @shoptalkrn',
+                                  reply_markup=keyboard_cancel())
     await state.set_state(UserAnketa.Anketa)
 
 
@@ -250,7 +291,8 @@ async def confirm_address(message: Message, state: FSMContext):
                              reply_markup=yes_or_no_addr(),
                              link_preview_options=LinkPreviewOptions(is_disabled=True))
     else:
-        await message.answer(text=f'Данный адрес не валиден! Отправьте еще раз:\n\n/cancel - отмена')
+        await message.answer(text=f'Данный адрес не валиден! Отправьте еще раз.',
+                             reply_markup=keyboard_cancel())
 
 
 @router.callback_query(F.data.startswith('address_'))
@@ -262,7 +304,8 @@ async def confirm_addres_yes_or_no(callback: CallbackQuery, state: FSMContext):
         await update_user_ton_addr(callback.from_user.id, data['address'])
         await callback.message.answer(text=f'Ваш адрес был добавлен!',
                                       reply_markup=keyboards_main())
-        await callback.message.answer('Пришлите ссылку на пост с вакансией из канала!\n\n/cancel - отмена')
+        await callback.message.answer('Пришлите ссылку на пост с вакансией из канала!',
+                                      reply_markup=keyboard_cancel())
         await state.set_state(UserAnketa.Anketa)
     else:
         await callback.message.answer(text=f'Ваш адрес не был добавлен! Отправьте его снова!',

@@ -267,7 +267,8 @@ async def make_anketa(message: Message, state: FSMContext):
 @router.callback_query(F.data == 'create_wallet')
 async def create_wallet(callback: CallbackQuery, state: FSMContext):
     logging.info(f'create_wallet: {callback.message.from_user.id}')
-    await callback.message.answer(text=f'Здесь будет добавлена инструкция как получить кошелек')
+    await callback.message.answer_video(video='BAACAgIAAxkBAAIG-mZ1D3n8x06fBosGaw290DPk6R91AAJlRwACuTmwS3Ys7U1g_Pa3NQQ',
+                                        caption='Создайте кошелек по видео инструкции')
     await asyncio.sleep(5)
     await make_anketa(message=callback.message, state=state)
 

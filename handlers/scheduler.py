@@ -6,6 +6,7 @@ from aiogram.types import CallbackQuery
 from config_data.config import Config, load_config
 from database.requests import get_user_from_id, UserStatus
 import requests
+from datetime import datetime, date, timedelta
 import logging
 config: Config = load_config()
 router = Router()
@@ -30,19 +31,35 @@ async def send_ton(bot: Bot):
     """
     # получаем список заполнивших анкету
     list_anketa = get_list_all_anketa()
-    anketa = 0
+    anketa = {}
+    date_today = datetime.now() - timedelta(days=0)
+    date_today_str = date_today.strftime('%d/%m/%Y')
     # если список не пустой, то ищем статус анкеты '✅'
     if list_anketa:
         for item in list_anketa:
             # если нашли прерываем цикл и обрабатываем событие
             if item[9] == '✅':
-                user = await get_user_from_id(user_id=int(item[1]))
-                if user.status != UserStatus.payed:
-                    anketa = item
-                    break
+                # получаем дату текущую
+                list_date_today = date_today_str.split('/')
+                date_today = date(int(list_date_today[2]), int(list_date_today[1]), int(list_date_today[0]))
+                # получаем дату заполнения анкеты
+                list_date_work = item[11].split('/')
+                date_work = date(int(list_date_work[2]), int(list_date_work[1]), int(list_date_work[0]))
+                # если прошел месяц (30 дней)
+                if date_today >= date_work:
+                    # получаем информацию о пользователе
+                    user = await get_user_from_id(user_id=int(item[1]))
+                    # проверяем его статус в БД
+                    if user.status != UserStatus.payed:
+                        # получаем информацию о его анкете
+                        for i, value in enumerate(item):
+                            anketa[list_anketa[0][i]] = value
+                        break
         # если событий целевого действия нет, то информируем админа
         else:
+            # получаем список админов
             list_super_admin = config.tg_bot.admin_ids.split(',')
+            # отправляем всем админам информационное сообщение
             for id_superadmin in list_super_admin:
                 result = get_telegram_user(user_id=int(id_superadmin),
                                            bot_token=config.tg_bot.token)
@@ -53,16 +70,19 @@ async def send_ton(bot: Bot):
                                                     f' совершивших целевое действие для начисления вознаграждения!')
                     except:
                         pass
-        # обработка целевого действия совершенного пользователем, получаем подтверждение от админа о начислении вознаграждения
+        # обработка целевого действия совершенного пользователем, получаем подтверждение от админа о
+        # начислении вознаграждения
+        # получаем список администраторов
         list_super_admin = config.tg_bot.admin_ids.split(',')
+        # отправляем всем администраторам сообщение
         for id_superadmin in list_super_admin:
             result = get_telegram_user(user_id=int(id_superadmin),
                                        bot_token=config.tg_bot.token)
             if 'result' in result:
                 try:
                     await bot.send_message(chat_id=int(id_superadmin),
-                                           text=f'Подтвердите начисление пользователю {anketa[2]}',
-                                           reply_markup=keyboards_confirm_pay(id_anketa=anketa[0]))
+                                           text=f'Подтвердите начисление пользователю {anketa["username_referal"]}',
+                                           reply_markup=keyboards_confirm_pay(id_anketa=anketa['id_anketa']))
                 except:
                     pass
     # если список пустой, то информируем админа

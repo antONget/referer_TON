@@ -18,7 +18,9 @@ def append_anketa(id_anketa: int,
                   phone: str,
                   city: str,
                   link_post: str,
-                  status: str) -> None:
+                  status: str,
+                  vacancy: str,
+                  date_anketa: str) -> None:
     logging.info(f'append_order')
     sheet.append_row([id_anketa,
                       id_telegram_refer,
@@ -29,7 +31,9 @@ def append_anketa(id_anketa: int,
                       phone,
                       city,
                       link_post,
-                      status])
+                      status,
+                      vacancy,
+                      date_anketa])
 
 
 def get_list_all_anketa() -> list:
@@ -42,9 +46,12 @@ def get_list_all_anketa() -> list:
 
 
 def get_list_anketa(id_anketa: int) -> list:
+    """
+    Получаем информацию об анкете
+    """
     logging.info(f'get_list_anketa')
-    username_referer = sheet.row_values(row=id_anketa+1)
-    return username_referer
+    info_anketa = sheet.row_values(row=id_anketa+1)
+    return info_anketa
 
 
 def update_status_anketa(status: str, telegram_id: int) -> None:

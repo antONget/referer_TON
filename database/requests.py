@@ -175,6 +175,9 @@ async def get_all_users() -> list[User]:
 
 
 async def get_user_from_id(user_id: int):
+    """
+    Получаем информацию из таблицы User по пользователю по его id телеграм
+    """
     async with async_session() as session:
         user = await session.scalar(select(User).where(User.id == user_id))
         return user
@@ -200,6 +203,9 @@ class UserStatus:
 
 
 async def update_status(user_id: int, status: UserStatus):
+    """
+    Обновляем статус пользователя
+    """
     async with async_session() as session:
         user: User = await session.scalar(select(User).where(User.id == user_id))
         if user:

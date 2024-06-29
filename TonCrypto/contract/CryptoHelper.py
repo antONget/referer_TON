@@ -8,8 +8,8 @@ from tonsdk.boc import Cell
 
 import requests
 from pathlib import Path
-
-
+import logging
+from fake_useragent import UserAgent
 
 class BotWallet:
     def __init__(self):
@@ -128,6 +128,17 @@ async def check_valid_addr(addr: str):
     return requests.get(f"https://toncenter.com/api/v2/getWalletInformation?address={addr}").json()['ok']
 
 
+async def get_ton_in_rub(amount:  int | float):
+    """
+    Конвертация рубли в TON по курсу
+    """
+    try:
+        return amount/(lambda response: response.json() if response.status_code == 200 else None)(requests.get(f"https://walletbot.me/api/v1/transfers/price_for_fiat/?crypto_currency=TON&local_currency=RUB&amount=1",
+                                                                                            headers={'Content-Type': 'application/json',
+                                                                                                      'user-agent': UserAgent().random}))['rate']
+    except Exception as e:
+        logging.error("PARSING ERROR: %s" % e)
+        return None
 
 TonWallet = BotWallet()
 

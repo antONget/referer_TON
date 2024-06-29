@@ -94,13 +94,19 @@ def on_work(id_anketa: int) -> ReplyKeyboardMarkup:
     return keyboard
 
 
-def confirm(user_id: int) -> ReplyKeyboardMarkup:
+def confirm(user_id: int, vacancy: str) -> ReplyKeyboardMarkup:
     logging.info("confirm_pay")
-    button_1 = InlineKeyboardButton(text='Подтвердить', callback_data=f'confirm_pay_{user_id}')
-    button_2 = InlineKeyboardButton(text='Отмена', callback_data=f'cancel_pay_{user_id}')
+    button_1 = InlineKeyboardButton(text='Подтвердить', callback_data=f'confirm_pay_{vacancy}_{user_id}')
+    button_2 = InlineKeyboardButton(text='Отмена', callback_data=f'cancel_pay__{vacancy}_{user_id}')
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2]], )
     return keyboard
 
 
-
+def keyboard_vacancy() -> ReplyKeyboardMarkup:
+    logging.info("keyboard_vacancy")
+    button_1 = InlineKeyboardButton(text='Мерчендайзер', callback_data=f'vacancy_merchandiser')
+    button_2 = InlineKeyboardButton(text='Тайный покупатель', callback_data=f'vacancy_mysteryShopper')
+    button_3 = InlineKeyboardButton(text='Продавец консультант', callback_data=f'vacancy_consultant')
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2], [button_3]], )
+    return keyboard

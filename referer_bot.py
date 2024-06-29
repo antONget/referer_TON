@@ -31,7 +31,7 @@ async def main():
     bot = Bot(token=config.tg_bot.token)
     dp = Dispatcher()
     scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
-    # # понедельник
+    # каждый день
     scheduler.add_job(send_ton, 'cron', hour=10, minute=0, args=(bot,))
     scheduler.start()
     # Регистрируем router в диспетчере

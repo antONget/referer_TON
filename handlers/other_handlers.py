@@ -6,7 +6,6 @@ from aiogram.types import FSInputFile
 from database.requests import get_all_users
 from services.get_exel import list_users_to_exel
 from config_data.config import Config, load_config
-from services.googlesheets import get_list_all_anketa, append_anketa, update_status_anketa, get_list_anketa
 
 import logging
 
@@ -24,6 +23,11 @@ async def all_message(message: Message) -> None:
     logging.info(f'all_message')
     if message.photo:
         logging.info(f'all_message message.photo')
+        print(message.photo[-1].file_id)
+
+    if message.video:
+        logging.info(f'all_message message.photo')
+        print(message.video.file_id)
 
     if message.sticker:
         logging.info(f'all_message message.sticker')
@@ -58,19 +62,7 @@ async def all_message(message: Message) -> None:
             await list_users_to_exel()
             file_path = "list_user.xlsx"
             await message.answer_document(FSInputFile(file_path))
-        if message.text == '/test_googlesheets':
-            logging.info(f'all_message message.admin./test_googlesheets')
-            id_anketa = len(get_list_all_anketa())
-            append_anketa(id_anketa=id_anketa,
-                          id_telegram_refer=message.chat.id,
-                          username_refer=message.from_user.username,
-                          id_telegram_referer=555,
-                          username_referer="username_referer",
-                          link_post="link_post",
-                          status="status")
-            update_status_anketa(id_anketa=2, status='🤑')
-            info_anketa = get_list_anketa(id_anketa=2)
-            print(info_anketa)
+
 
 
 

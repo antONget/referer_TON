@@ -71,7 +71,7 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
         # получаем количество TON по курсу
         amount_ton = await get_ton_in_rub(amount=amount)
         # пользователю начисляем 50% от суммы
-        amount_user_ton = amount_ton / 2
+        amount_user_ton = round(amount_ton / 2, 2)
         # производим начисление вознаграждения
         tr = await TonWallet.transfer(amount=amount_user_ton, to_addr=user_addr)
         # если платеж прошел
@@ -87,8 +87,8 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
                 # отправляем пользователя сообщение
                 await bot.send_message(chat_id=int(info_anketa[1]),
                                        text=f'Вам было отправлено {amount_user_ton} TON\n\n'
-                                            f'Проверьте ваш кошелек'
-                                            f' <a href="https://tonscan.org/address/{user_addr}">кошелек.</a>',
+                                            f'Проверьте ваш <a href="https://tonscan.org/address/{user_addr}">'
+                                            f'кошелек.</a>',
                                        parse_mode='html',
                                        link_preview_options=LinkPreviewOptions(is_disabled=True))
             except:
@@ -104,7 +104,8 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
                 try:
                     # информируем реферера
                     await bot.send_message(chat_id=int(info_anketa[3]),
-                                           text=f'Вам отправлено <strong>{amount_ton} TON</strong> за приглашенного пользователя'
+                                           text=f'Вам отправлено <strong>{amount_ton} TON '
+                                                f'</strong>за приглашенного пользователя'
                                                 f' @{await _get_username_from_id(int(info_anketa[1]))}',
                                            parse_mode='html')
                 except:

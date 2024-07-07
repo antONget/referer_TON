@@ -31,24 +31,29 @@ async def send_ton(bot: Bot):
     """
     # получаем список заполнивших анкету
     list_anketa = get_list_all_anketa()
+    # 1-id_anketa, 2-id_telegram_referal, 3-username_referal, 4-id_telegram_referer, 5-username_referer,
+    # 6-name, 7-phone,	8-city, 9-email, 10-link_post,
+    # 11-vacancy, 12-status, 13-date_anketa, 14-date_work
+    first_row = list_anketa[0]
     anketa = {}
+    # !!!! days требуется выставить по количеству дней после начала работы
     date_today = datetime.now() - timedelta(days=0)
     date_today_str = date_today.strftime('%d/%m/%Y')
     # если список не пустой, то ищем статус анкеты '✅'
     if list_anketa:
         for item in list_anketa:
             # если нашли прерываем цикл и обрабатываем событие
-            if item[9] == '✅':
+            if item[first_row.index("status")] == '✅':
                 # получаем дату текущую
                 list_date_today = date_today_str.split('/')
                 date_today = date(int(list_date_today[2]), int(list_date_today[1]), int(list_date_today[0]))
                 # получаем дату заполнения анкеты
-                list_date_work = item[11].split('/')
+                list_date_work = item[first_row.index("date_anketa")].split('/')
                 date_work = date(int(list_date_work[2]), int(list_date_work[1]), int(list_date_work[0]))
                 # если прошел месяц (30 дней)
                 if date_today >= date_work:
                     # получаем информацию о пользователе
-                    user = await get_user_from_id(user_id=int(item[1]))
+                    user = await get_user_from_id(user_id=int(item[first_row.index("id_telegram_referal")]))
                     # проверяем его статус в БД
                     if user.status != UserStatus.payed:
                         # получаем информацию о его анкете

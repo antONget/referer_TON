@@ -184,6 +184,10 @@ async def get_user_from_id(user_id: int):
 
 
 async def get_user_ton_addr_by_id(user_id: int):
+    """
+    Получить адрес кошелька пользователя по его id телеграм
+    param: user_id - id телеграм
+    """
     async with async_session() as session:
         user: User = await session.scalar(select(User).where(User.id == user_id))
         if user:

@@ -22,6 +22,18 @@ def keyboards_main() -> ReplyKeyboardMarkup:
     return keyboard
 
 
+def keyboard_confirm_cantact_date():
+    logging.info("keyboard_confirm_cantact_date")
+    button_1 = InlineKeyboardButton(text='Верно',
+                                    callback_data='data_confirm')
+    button_2 = InlineKeyboardButton(text='Изменить',
+                                    callback_data='data_change')
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[[button_1], [button_2]],
+    )
+    return keyboard
+
+
 def keyboards_get_contact() -> ReplyKeyboardMarkup:
     logging.info("keyboards_get_contact")
     button_1 = KeyboardButton(text='Отправить свой контакт ☎️',

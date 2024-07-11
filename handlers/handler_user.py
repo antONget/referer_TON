@@ -558,7 +558,7 @@ async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
                              message_id=callback.message.message_id)
     # we get the telegram id of the user who requested the TON charge from callback.data
     user_to_pay = int(callback.data.split('_')[-1])
-    vacancy = callback.data.split('_')[-1]
+    vacancy = callback.data.split('_')[-2]
     # changing the status in the status cell for the user on '✅'
     update_status_anketa(status='✅', telegram_id=user_to_pay)
     # we get the wallet address for charging TON

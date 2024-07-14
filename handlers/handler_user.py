@@ -268,8 +268,8 @@ async def confirm_change_data(callback: CallbackQuery, state: FSMContext):
         await state.update_data(phone=dict_info_user['phone'])
         await state.update_data(city=dict_info_user['city'])
         await state.update_data(email=dict_info_user['email'])
-        await callback.message.answer('Пришлите ссылку на пост с вакансией из канала @shoptalkrn',
-                                      reply_markup=keyboard_cancel())
+        await callback.message.edit_text(text='Пришлите ссылку на пост с вакансией из канала @shoptalkrn',
+                                         reply_markup=keyboard_cancel())
         await state.set_state(UserAnketa.Anketa)
     elif answer == 'change':
         await callback.message.edit_text(text='Как вас зовут?',
@@ -309,8 +309,8 @@ async def process_validate_russian_phone_number(message: Message, state: FSMCont
 async def process_getphone_back(callback: CallbackQuery, state: FSMContext) -> None:
     """Изменение введенного номера телефона"""
     logging.info(f'process_getphone_back: {callback.message.chat.id}')
-    await callback.message.answer(text=f'Поделитесь вашим номером телефона ☎️',
-                                  reply_markup=keyboards_get_contact())
+    await callback.message.edit_text(text=f'Поделитесь вашим номером телефона ☎️',
+                                     reply_markup=None)
     await state.set_state(UserAnketa.phone)
 
 
@@ -318,8 +318,9 @@ async def process_getphone_back(callback: CallbackQuery, state: FSMContext) -> N
 async def process_confirm_phone(callback: CallbackQuery, state: FSMContext, bot: Bot) -> None:
     """Введенный номер телефона подтвержден. Запрос города"""
     logging.info(f'process_confirm_phone: {callback.message.chat.id}')
+    await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
     await callback.message.answer(text=f'Из какого вы города?',
-                                  reply_markup=ReplyKeyboardRemove())
+                                  reply_markup=keyboards_main())
     await state.set_state(UserAnketa.city)
 
 
@@ -347,9 +348,10 @@ async def make_anketa_(message: Message, state: FSMContext):
 
 
 @router.callback_query(F.data == 'create_wallet')
-async def create_wallet(callback: CallbackQuery, state: FSMContext):
+async def create_wallet(callback: CallbackQuery, state: FSMContext, bot: Bot):
     """Видео-инструкция по созданию кошелька"""
     logging.info(f'create_wallet: {callback.message.from_user.id}')
+    await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
     await callback.message.answer_video(video='BAACAgIAAxkBAAIG-mZ1D3n8x06fBosGaw290DPk6R91AAJlRwACuTmwS3Ys7U1g_Pa3NQQ',
                                         caption='Создайте кошелек по видео инструкции')
     await asyncio.sleep(5)
@@ -360,9 +362,9 @@ async def create_wallet(callback: CallbackQuery, state: FSMContext):
 async def pass_state(callback: CallbackQuery, state: FSMContext):
     """Пропустить ввод номера кошелька. Запрос на ссылку на вакансию"""
     logging.info(f'pass_state: {callback.message.from_user.id}')
-    await callback.message.answer('Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - '
-                                  'канале @shoptalkrn',
-                                  reply_markup=keyboard_cancel())
+    keyboard = keyboard_cancel()
+    await callback.message.edit_text(text='Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - канале @shoptalkrn',
+                                     reply_markup=keyboard)
     await state.set_state(UserAnketa.Anketa)
 
 
@@ -417,7 +419,7 @@ async def confirm_anketa(callback: CallbackQuery, state: FSMContext):
     logging.info(f'confirm_anketa: {callback.message.from_user.id}')
     vacancy = callback.data.split('_')[1]
     await state.update_data(vacancy=vacancy)
-    await callback.message.answer('Отправить анкету?', reply_markup=yes_or_no())
+    await callback.message.edit_text('Отправить анкету?', reply_markup=yes_or_no())
     await callback.answer()
 
 

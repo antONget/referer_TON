@@ -39,16 +39,19 @@ async def send_ton(bot: Bot):
     # !!!! days требуется выставить по количеству дней после начала работы
     date_today = datetime.now() - timedelta(days=0)
     date_today_str = date_today.strftime('%d/%m/%Y')
-    # если список не пустой, то ищем статус анкеты '✅'
+    # если список не пустой, то пропускаем '💰'
     if list_anketa:
         for item in list_anketa:
             # если нашли прерываем цикл и обрабатываем событие
-            if item[first_row.index("status")] == '✅':
+            if item[first_row.index("status")] != '💰':
                 # получаем дату текущую
                 list_date_today = date_today_str.split('/')
                 date_today = date(int(list_date_today[2]), int(list_date_today[1]), int(list_date_today[0]))
                 # получаем дату заполнения анкеты
-                list_date_work = item[first_row.index("date_anketa")].split('/')
+                if item[first_row.index("date_work")] not in ['', "date_work"]:
+                    list_date_work = item[first_row.index("date_work")].split('/')
+                else:
+                    continue
                 date_work = date(int(list_date_work[2]), int(list_date_work[1]), int(list_date_work[0]))
                 # если прошел месяц (30 дней)
                 if date_today >= date_work:

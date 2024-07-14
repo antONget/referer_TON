@@ -57,7 +57,7 @@ def keyboard_confirm_phone() -> None:
     return keyboard
 
 
-def keyboard_cancel() -> ReplyKeyboardMarkup:
+def keyboard_cancel():
     logging.info("yes_or_no")
     button_1 = InlineKeyboardButton(text='Отмена',
                                     callback_data='/cancel')
@@ -66,7 +66,8 @@ def keyboard_cancel() -> ReplyKeyboardMarkup:
     )
     return keyboard
 
-def yes_or_no() -> ReplyKeyboardMarkup:
+
+def yes_or_no():
     logging.info("yes_or_no")
     button_1 = InlineKeyboardButton(text='Да', callback_data='linkanketa_confirm')
     button_2 = InlineKeyboardButton(text='Нет', callback_data='linkanketa_cancel')

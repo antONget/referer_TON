@@ -62,6 +62,7 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
         # формируем строку вакансии
         vacancy = ''
         amount = 0
+
         if info_anketa[10] == 'merchandiser':
             amount = 2000
         elif info_anketa[10] == 'mysteryShopper':

@@ -45,7 +45,7 @@ def keyboards_get_contact() -> ReplyKeyboardMarkup:
     return keyboard
 
 
-def keyboard_confirm_phone() -> None:
+def keyboard_confirm_phone():
     logging.info("keyboard_confirm_phone")
     button_1 = InlineKeyboardButton(text='Верно',
                                     callback_data='confirm_phone')
@@ -78,7 +78,7 @@ def yes_or_no():
     return keyboard
 
 
-def yes_or_no_addr() -> ReplyKeyboardMarkup:
+def yes_or_no_addr():
     logging.info("confirm addr kb")
     button_1 = InlineKeyboardButton(text='Да', callback_data='address_confirm')
     button_2 = InlineKeyboardButton(text='Нет', callback_data='address_cancel')
@@ -88,7 +88,7 @@ def yes_or_no_addr() -> ReplyKeyboardMarkup:
     return keyboard
 
 
-def pass_the_state() -> ReplyKeyboardMarkup:
+def pass_the_state():
     logging.info("pass_the_state")
     button_1 = InlineKeyboardButton(text='Пропустить', callback_data='pass_wallet')
     button_2 = InlineKeyboardButton(text='Как создать кошелек?', callback_data='create_wallet')
@@ -98,7 +98,7 @@ def pass_the_state() -> ReplyKeyboardMarkup:
     return keyboard
 
 
-def on_work(id_anketa: int) -> ReplyKeyboardMarkup:
+def on_work(id_anketa: int):
     logging.info("on_work")
     button_1 = InlineKeyboardButton(text='Хочу TON', callback_data=f'wishton_{id_anketa}')
     keyboard = InlineKeyboardMarkup(
@@ -107,7 +107,7 @@ def on_work(id_anketa: int) -> ReplyKeyboardMarkup:
     return keyboard
 
 
-def confirm(user_id: int, vacancy: str) -> ReplyKeyboardMarkup:
+def confirm(user_id: int, vacancy: str):
     logging.info("confirm_pay")
     button_1 = InlineKeyboardButton(text='Подтвердить', callback_data=f'confirm_pay_{vacancy}_{user_id}')
     button_2 = InlineKeyboardButton(text='Отмена', callback_data=f'cancel_pay__{vacancy}_{user_id}')
@@ -116,10 +116,10 @@ def confirm(user_id: int, vacancy: str) -> ReplyKeyboardMarkup:
     return keyboard
 
 
-def keyboard_vacancy() -> ReplyKeyboardMarkup:
+def keyboard_vacancy():
     logging.info("keyboard_vacancy")
     button_1 = InlineKeyboardButton(text='Мерчендайзер', callback_data=f'vacancy_merchandiser')
     button_2 = InlineKeyboardButton(text='Тайный покупатель', callback_data=f'vacancy_mysteryShopper')
-    button_3 = InlineKeyboardButton(text='Продавец консультант', callback_data=f'vacancy_consultant')
+    button_3 = InlineKeyboardButton(text='Продавец-консультант', callback_data=f'vacancy_consultant')
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[button_1], [button_2], [button_3]], )
     return keyboard

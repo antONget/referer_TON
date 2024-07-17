@@ -37,7 +37,7 @@ async def send_ton(bot: Bot):
     first_row = list_anketa[0]
     anketa = {}
     # !!!! days требуется выставить по количеству дней после начала работы
-    date_today = datetime.now() - timedelta(days=0)
+    date_today = datetime.now() - timedelta(days=30)
     date_today_str = date_today.strftime('%d/%m/%Y')
     # если список не пустой, то пропускаем '💰'
     if list_anketa:

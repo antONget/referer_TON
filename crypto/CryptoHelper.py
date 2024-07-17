@@ -21,8 +21,8 @@ async def pay_ton_to(user_id: int, amount: int | float) -> Transfer:
     return tr
 
 
-
 """ ------------------------ FOR ADMINS ------------------------"""
+
 
 async def get_balance():
     balance = await CryptoHelper.get_balance()
@@ -31,13 +31,14 @@ async def get_balance():
 
     return balance_ton
 
+
 async def get_stats():
     stats = await CryptoHelper.get_stats()
     await CryptoHelper.close()
     s = f'''Оборот: ${stats.volume}\nКонверсия: {stats.conversion} %\n\nКоличество созданных счетов: {stats.created_invoice_count}\nКоличество оплат: {stats.paid_invoice_count}\nКоличество пользователей: {stats.unique_users_count}
     '''
-
     return s
+
 
 async def get_paid_invoices():
     invoices = await CryptoHelper.get_invoices()
@@ -62,26 +63,7 @@ async def create_invoice_link(amount: int | float):
     print(invoice)
     return invoice.bot_invoice_url
 
-# async def get_me():
-#     profile = await CryptoHelper.get_me()
-#     await CryptoHelper.close()
-#     return profile
 
-# print(run(get_me()))
-
-# print(run(create_invoice_link(4)))
-# print(run(create_check_link()))
-
-
-
-# run(pay_ton_to(5443784834, 0.14))
-
-
-# print(run(get_paid_invoices()))
-# print()
-# print(run(get_stats()))
-# print()
-# print(run(get_balance()))
 
 
 

@@ -270,7 +270,7 @@ async def confirm_change_data(callback: CallbackQuery, state: FSMContext):
         await state.update_data(phone=dict_info_user['phone'])
         await state.update_data(city=dict_info_user['city'])
         await state.update_data(email=dict_info_user['email'])
-        await callback.message.edit_text(text='Пришлите ссылку на пост с вакансией из канала @shoptalkrn',
+        await callback.message.edit_text(text='Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - канале @shoptalkrn',
                                          reply_markup=keyboard_cancel())
         await state.set_state(UserAnketa.Anketa)
     elif answer == 'change':
@@ -389,16 +389,17 @@ async def confirm_address(message: Message, state: FSMContext):
 
 
 @router.callback_query(F.data.startswith('address_'))
-async def confirm_addres_yes_or_no(callback: CallbackQuery, state: FSMContext):
+async def confirm_address_yes_or_no(callback: CallbackQuery, state: FSMContext):
     """Подтверждение введенного номера кошелька"""
-    logging.info(f'confirm_addres_y_n: {callback.from_user.id}')
+    logging.info(f'confirm_address_y_n: {callback.from_user.id}')
     data = await state.get_data()
     answer = callback.data.split('_')
     if answer[1] == "confirm":
         await update_user_ton_addr(callback.from_user.id, data['address'])
         await callback.message.answer(text=f'Ваш кошелек был добавлен!',
                                       reply_markup=keyboards_main())
-        await callback.message.answer('Пришлите ссылку на пост с вакансией из канала @shoptalkrn',
+        await callback.message.answer('Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - канале'
+                                      ' @shoptalkrn',
                                       reply_markup=keyboard_cancel())
         await state.set_state(UserAnketa.Anketa)
     else:

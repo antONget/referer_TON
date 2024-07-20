@@ -10,22 +10,24 @@ import requests
 from pathlib import Path
 import logging
 from fake_useragent import UserAgent
-
-
+from config_data.config import Config, load_config
+config: Config = load_config()
 class BotWallet:
     def __init__(self):
         # testnet
-        self.mnemonics = ['plastic', 'middle', 'retire', 'parent', 'various', 'differ', 'bike', 'volume', 'morning',
-                          'crush', 'tell', 'motion', 'much', 'carbon', 'pitch', 'divorce', 'veteran', 'define',
-                          'prosper', 'toss', 'charge', 'amused', 'divorce', 'melt']
-        self.addr = "kQATX9u9PdL3hU1LrjFQcUUBuOAO95tNCRA77HriftbH_l51"  # test addr
-        self.url = 'https://ton.org/testnet-global.config.json'
+        # self.mnemonics = ['plastic', 'middle', 'retire', 'parent', 'various', 'differ', 'bike', 'volume', 'morning',
+        #                   'crush', 'tell', 'motion', 'much', 'carbon', 'pitch', 'divorce', 'veteran', 'define',
+        #                   'prosper', 'toss', 'charge', 'amused', 'divorce', 'melt']
+        # self.addr = "kQATX9u9PdL3hU1LrjFQcUUBuOAO95tNCRA77HriftbH_l51"  # test addr
+        # self.url = 'https://ton.org/testnet-global.config.json'
 
         # uncommen to use mainnet
         # self.mnemonics = ['dream', 'horse', 'reunion', 'crater', 'rocket', 'able', 'element', 'allow', 'picnic', 'material', 'deliver', 'hedgehog', 'monster', 'junk', 'garbage', 'honey', 'glare', 'milk', 'pizza', 'city', 'receive', 'horse', 'inside', 'online']
         # self.addr = "EQA2v-pA4Nh0nmhD8Js1iAcZpq0qxFUZV5P1tnghj0YZfGGX" # bot real addr
         # self.url = 'https://ton.org/global-config.json'
-
+        self.mnemonics = config.tg_bot.mnemonics.split(',')
+        self.addr = "EQA2v-pA4Nh0nmhD8Js1iAcZpq0qxFUZV5P1tnghj0YZfGGX"  # bot real addr
+        self.url = 'https://ton.org/global-config.json'
         # Getting wallet from mnemonics
         self.wallet = Wallets.from_mnemonics(mnemonics=self.mnemonics)[-1]
 

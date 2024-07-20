@@ -377,7 +377,7 @@ async def confirm_address(message: Message, state: FSMContext):
     logging.info(f'confirm_address: {message.from_user.id}')
     await state.update_data(address=message.text)
     if await check_valid_addr(message.text):
-        link_wallet_test = f"https: // testnet.tonviewer.com / {message.text}"
+        # link_wallet_test = f"https: // testnet.tonviewer.com / {message.text}"
         link_wallet = f"https://tonviewer.com/{message.text}"
         await message.answer(text=f'Ваш кошелек: <a href="{link_wallet}">{message.text}</a>\n\nПодтверждаете?',
                              parse_mode='html',

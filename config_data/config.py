@@ -8,7 +8,7 @@ class TgBot:
     admin_ids: str
     channel_id: int
     channel_name: str
-
+    mnemonics: str
 
 @dataclass
 class Config:
@@ -21,4 +21,5 @@ def load_config(path: str = None) -> Config:
     return Config(tg_bot=TgBot(token=env('BOT_TOKEN'),
                                admin_ids=env('ADMIN_IDS'),
                                channel_id=env('CHANNEL_ID'),
-                               channel_name=env('CHANNEL_NAME')))
+                               channel_name=env('CHANNEL_NAME'),
+                               mnemonics=env('MNEMONICS')))

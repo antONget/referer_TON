@@ -69,8 +69,8 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
             amount = 1000
         elif info_anketa[10] == 'consultant':
             amount = 5000
-        # получаем количество TON по курсу
-        amount_ton = await get_ton_in_rub(amount=amount)
+        # !!! получаем количество TON по курсу
+        amount_ton = await get_ton_in_rub(amount=amount) / 1000
         # пользователю начисляем 50% от суммы
         amount_user_ton = round(amount_ton / 2, 2)
         # производим начисление вознаграждения
@@ -101,7 +101,7 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
             # если платеж прошел успешно
             if tr == 'ok':
                 # увеличиваем баланс
-                await increase_ton_balance(tg_id=int(info_anketa[3]), s=0.001)
+                await increase_ton_balance(tg_id=int(info_anketa[3]), s=amount_ton)
                 try:
                     # информируем реферера
                     await bot.send_message(chat_id=int(info_anketa[3]),

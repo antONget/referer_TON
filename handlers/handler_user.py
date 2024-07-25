@@ -130,7 +130,7 @@ async def user_subscription(message: Message | CallbackQuery):
     logging.info(f'user_subscription: {message.from_user.id}')
     if isinstance(message, Message):
         await message.answer_photo(
-            photo='AgACAgIAAxkBAAIG2mZ0W586nnqgd8vmaszoV-6YWiMzAAKj2zEbeLygS5B-4alYFVH_AQADAgADeAADNQQ',
+            photo='AgACAgIAAxkBAAINSWaieYcjePwjwQiprPXvjuUAAUQpMQAC4d4xG_w4GEncY55Kk2uk_gEAAwIAA3kAAzUE',
             caption=f'Привет! 👋\n'
                     f'Это бот реферальной системы.\n\n'
                     f'Тут вы сможете:\n'
@@ -331,7 +331,7 @@ async def get_city(message: Message, state: FSMContext):
     """Получаем название города. Запрос на отправку номера электронной почты"""
     logging.info(f'get_city: {message.chat.id}')
     await state.update_data(city=message.text)
-    await message.answer(text=f'Пришлите адрес эл. почты')
+    await message.answer(text=f'Отправьте адрес электронной почты')
     await state.set_state(UserAnketa.email)
 
 
@@ -340,10 +340,10 @@ async def make_anketa_(message: Message, state: FSMContext):
     """Получаем название города. Запрос на отправку номера кошелька"""
     logging.info(f'make_anketa_: {message.from_user.id}')
     await state.update_data(email=message.text)
-    await message.answer(text=f'Отправьте адрес вашего электронного кошелька для вознаграждения, '
-                              f'в случае выхода на работу.\n\n'
-                              f'Также, вы можете воспользоваться реферальной программой и получать TON за приглашенных'
-                              f' пользователей.\n\n'
+    await message.answer(text=f'Отправьте адрес вашего электронного кошелька для вознаграждения.\n\n'
+                              f'Используйте реферальную программу и получайте TON за приглашенных друзей.\n\n'
+                              f'Видео-инструкция по созданию кошелька в «Как создать кошелек?»\n'
+                              f'Бот для создания кошелька — ссылка на бота Wallet.\n\n'
                               f'/cancel для отмены',
                          reply_markup=pass_the_state())
     await state.set_state(UserAnketa.address)
@@ -365,7 +365,7 @@ async def pass_state(callback: CallbackQuery, state: FSMContext):
     """Пропустить ввод номера кошелька. Запрос на ссылку на вакансию"""
     logging.info(f'pass_state: {callback.message.from_user.id}')
     keyboard = keyboard_cancel()
-    await callback.message.edit_text(text='Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм'
+    await callback.message.edit_text(text='Отправьте ссылку (номер) вакансии. Вы можете найти их в Телеграм'
                                           ' - канале @shoptalkrn',
                                      reply_markup=keyboard)
     await state.set_state(UserAnketa.Anketa)
@@ -487,9 +487,8 @@ async def confirm_anketa(callback: CallbackQuery, state: FSMContext, bot: Bot):
                                  message_id=msg.message_id)
         await callback.answer(text='Отлично, ваша анкета отправлена!',
                               show_alert=True)
-        await callback.message.answer(text='Начисление TON произойдет через месяц после выхода на работу. \n\n'
-                                           'Также вы можете воспользоваться реферальной программой и получать TON за'
-                                           ' приглашенных пользователей')
+        await callback.message.answer(text='Благодарим за заполнение анкеты! \n\n'
+                                           'Начисление TON  произведется по окончанию первого месяца работы.')
         # await callback.message.answer(text='Для оперативного начисления TON после месяца работы нажми на кнопку'
         #                                    ' "Хочу TON"',
         #                               reply_markup=on_work(id_anketa=id_anketa))

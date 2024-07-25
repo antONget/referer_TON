@@ -343,7 +343,7 @@ async def make_anketa_(message: Message, state: FSMContext):
     await message.answer(text=f'Отправьте адрес вашего электронного кошелька для вознаграждения.\n\n'
                               f'Используйте реферальную программу и получайте TON за приглашенных друзей.\n\n'
                               f'Видео-инструкция по созданию кошелька в «Как создать кошелек?»\n'
-                              f'Бот для создания кошелька — ссылка на бота Wallet.\n\n'
+                              f'Бот для создания кошелька — @wallet.\n\n'
                               f'/cancel для отмены',
                          reply_markup=pass_the_state())
     await state.set_state(UserAnketa.address)

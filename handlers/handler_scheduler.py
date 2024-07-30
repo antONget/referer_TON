@@ -62,7 +62,7 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
         # формируем строку вакансии
         vacancy = ''
         amount = 0
-
+        logging.info(f'info_anketa: {info_anketa}')
         if info_anketa[10] == 'merchandiser':
             amount = 2000
         elif info_anketa[10] == 'mysteryShopper':
@@ -71,6 +71,7 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
             amount = 5000
         # !!! получаем количество TON по курсу
         amount_ton = await get_ton_in_rub(amount=amount) / 1000
+        logging.info(f'amount_ton: {amount_ton}')
         # пользователю начисляем 50% от суммы
         # amount_user_ton = round(amount_ton / 2, 2)
         # производим начисление вознаграждения

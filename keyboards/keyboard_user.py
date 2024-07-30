@@ -40,7 +40,7 @@ def keyboards_main_second() -> ReplyKeyboardMarkup:
     button_4 = KeyboardButton(text='Список рефералов')
     button_5 = KeyboardButton(text='Главное меню')
     keyboard = ReplyKeyboardMarkup(
-        keyboard=[[button_1], [button_2], [button_3], [button_4], [button_5]],
+        keyboard=[[button_1, button_3], [button_2, button_4], [button_5]],
         resize_keyboard=True
     )
     return keyboard

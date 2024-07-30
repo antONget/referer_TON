@@ -70,7 +70,7 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
         elif info_anketa[10] == 'consultant':
             amount = 5000
         # !!! получаем количество TON по курсу
-        amount_ton = await get_ton_in_rub(amount=amount) / 1000
+        amount_ton = round(await get_ton_in_rub(amount=amount) / 1000, 4)
         logging.info(f'amount_ton: {amount_ton}')
         # пользователю начисляем 50% от суммы
         # amount_user_ton = round(amount_ton / 2, 2)

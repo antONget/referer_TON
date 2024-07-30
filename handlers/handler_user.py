@@ -485,13 +485,13 @@ async def get_city(message: Message, state: FSMContext):
 #         await state.set_state(UserAnketa.address)
 
 
-@router.callback_query(F.text, StateFilter(UserAnketa.email))
-async def confirm_email(callback: CallbackQuery, state: FSMContext):
+@router.message(F.text, StateFilter(UserAnketa.email))
+async def confirm_email(message: Message, state: FSMContext):
     """Получение адреса почты"""
-    logging.info(f'confirm_email: {callback.from_user.id}')
-    await callback.message.answer('Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - канале'
-                                  ' @shoptalkrn',
-                                  reply_markup=keyboard_cancel())
+    logging.info(f'confirm_email: {message.chat.id}')
+    await message.answer(text='Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - канале'
+                              ' @shoptalkrn',
+                         reply_markup=keyboard_cancel())
     await state.set_state(UserAnketa.address)
 
 

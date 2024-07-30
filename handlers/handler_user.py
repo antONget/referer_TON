@@ -489,6 +489,7 @@ async def get_city(message: Message, state: FSMContext):
 async def confirm_email(message: Message, state: FSMContext):
     """Получение адреса почты"""
     logging.info(f'confirm_email: {message.chat.id}')
+    await state.update_data(email=message.text)
     await message.answer(text='Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - канале'
                               ' @shoptalkrn',
                          reply_markup=keyboard_cancel())

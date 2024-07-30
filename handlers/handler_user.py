@@ -150,7 +150,12 @@ async def user_subscription(message: Message | CallbackQuery):
                     f'✅ заполнить анкету на вакансию;\n'
                     f'✅ скопировать свою реферальную ссылку и пригласить по ней друга;\n'
                     f'✅ узнать свой баланс;\n'
-                    f'✅ посмотреть список приглашенных людей.',
+                    f'✅ посмотреть список приглашенных людей.\n\n'
+                    f'Если Вы пригласили друга — создавайте реферальную ссылку, приглашайте друга на вакансию и'
+                    f' добавляйте кошелек.\n'
+                    f'Если Вас пригласили — заполняйте анкету и выходите на работу.\n\n'
+                    f'Вознаграждение в валюте TON произведется по окончанию первого месяца работы на электронный'
+                    f' кошелек.',
             reply_markup=keyboards_main()
         )
     else:
@@ -162,7 +167,12 @@ async def user_subscription(message: Message | CallbackQuery):
                     f'✅ заполнить анкету на вакансию;\n'
                     f'✅ скопировать свою реферальную ссылку и пригласить по ней друга;\n'
                     f'✅ узнать свой баланс;\n'
-                    f'✅ посмотреть список приглашенных людей.',
+                    f'✅ посмотреть список приглашенных людей.\n\n'
+                    f'Если Вы пригласили друга — создавайте реферальную ссылку, приглашайте друга на вакансию и'
+                    f' добавляйте кошелек.\n'
+                    f'Если Вас пригласили — заполняйте анкету и выходите на работу.\n\n'
+                    f'Вознаграждение в валюте TON произведется по окончанию первого месяца работы на электронный'
+                    f' кошелек.',
             reply_markup=keyboards_main()
         )
 
@@ -181,7 +191,12 @@ async def press_main_menu(message: Message):
                 f'✅ заполнить анкету на вакансию;\n'
                 f'✅ скопировать свою реферальную ссылку и пригласить по ней друга;\n'
                 f'✅ узнать свой баланс;\n'
-                f'✅ посмотреть список приглашенных людей.',
+                f'✅ посмотреть список приглашенных людей.\n\n'
+                f'Если Вы пригласили друга — создавайте реферальную ссылку, приглашайте друга на вакансию и'
+                f' добавляйте кошелек.\n'
+                f'Если Вас пригласили — заполняйте анкету и выходите на работу.\n\n'
+                f'Вознаграждение в валюте TON произведется по окончанию первого месяца работы на электронный'
+                f' кошелек.',
         reply_markup=keyboards_main())
 
 
@@ -396,78 +411,88 @@ async def get_city(message: Message, state: FSMContext):
     await state.set_state(UserAnketa.email)
 
 
-@router.message(F.text, StateFilter(UserAnketa.email))
-async def make_anketa_(message: Message, state: FSMContext):
-    """Получаем название города. Запрос на отправку номера кошелька"""
-    logging.info(f'make_anketa_: {message.from_user.id}')
-    await state.update_data(email=message.text)
-    await message.answer(text=f'Отправьте адрес вашего электронного кошелька для вознаграждения.\n\n'
-                              f'Используйте реферальную программу и получайте TON за приглашенных друзей.\n\n'
-                              f'Видео-инструкция по созданию кошелька в «Как создать кошелек?»\n'
-                              f'Бот для создания кошелька — @wallet.\n\n'
-                              f'/cancel для отмены',
-                         reply_markup=pass_the_state())
+# @router.message(F.text, StateFilter(UserAnketa.email))
+# async def make_anketa_(message: Message, state: FSMContext):
+#     """Получаем название города. Запрос на отправку номера кошелька"""
+#     logging.info(f'make_anketa_: {message.from_user.id}')
+#     await state.update_data(email=message.text)
+#     await message.answer(text=f'Отправьте адрес вашего электронного кошелька для вознаграждения.\n\n'
+#                               f'Используйте реферальную программу и получайте TON за приглашенных друзей.\n\n'
+#                               f'Видео-инструкция по созданию кошелька в «Как создать кошелек?»\n'
+#                               f'Бот для создания кошелька — @wallet.\n\n'
+#                               f'/cancel для отмены',
+#                          reply_markup=pass_the_state())
+#     await state.set_state(UserAnketa.address)
+
+#
+# @router.callback_query(F.data == 'create_wallet')
+# async def create_wallet(callback: CallbackQuery, state: FSMContext, bot: Bot):
+#     """Видео-инструкция по созданию кошелька"""
+#     logging.info(f'create_wallet: {callback.message.from_user.id}')
+#     await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+#     await callback.message.answer_video(video='BAACAgIAAxkBAAIG-mZ1D3n8x06fBosGaw290DPk6R91AAJlRwACuTmwS3Ys7U1g_Pa3NQQ',
+#                                         caption='Создайте кошелек по видео инструкции')
+#     await asyncio.sleep(5)
+#     await make_anketa_(message=callback.message, state=state)
+#
+#
+# @router.callback_query(F.data == 'pass_wallet')
+# async def pass_state(callback: CallbackQuery, state: FSMContext):
+#     """Пропустить ввод номера кошелька. Запрос на ссылку на вакансию"""
+#     logging.info(f'pass_state: {callback.message.from_user.id}')
+#     keyboard = keyboard_cancel()
+#     await callback.message.edit_text(text='Отправьте ссылку (номер) вакансии. Вы можете найти их в Телеграм'
+#                                           ' - канале @shoptalkrn',
+#                                      reply_markup=keyboard)
+#     await state.set_state(UserAnketa.Anketa)
+#
+#
+# @router.message(UserAnketa.address)
+# async def confirm_address(message: Message, state: FSMContext):
+#     """Получаем номер кошелька. С проверкой введенного номера кошелька на валидность"""
+#     logging.info(f'confirm_address: {message.from_user.id}')
+#     await state.update_data(address=message.text)
+#     if await check_valid_addr(message.text):
+#         # link_wallet_test = f"https: // testnet.tonviewer.com / {message.text}"
+#         link_wallet = f"https://tonviewer.com/{message.text}"
+#         await message.answer(text=f'Ваш кошелек: <a href="{link_wallet}">{message.text}</a>\n\nПодтверждаете?',
+#                              parse_mode='html',
+#                              reply_markup=yes_or_no_addr(),
+#                              link_preview_options=LinkPreviewOptions(is_disabled=True))
+#     else:
+#         await message.answer(text=f'Данный адрес не валиден! Отправьте еще раз.',
+#                              reply_markup=keyboard_cancel())
+#     await state.set_state(default_state)
+#
+#
+# @router.callback_query(F.data.startswith('address_'))
+# async def confirm_address_yes_or_no(callback: CallbackQuery, state: FSMContext):
+#     """Подтверждение введенного номера кошелька"""
+#     logging.info(f'confirm_address_y_n: {callback.from_user.id}')
+#     data = await state.get_data()
+#     answer = callback.data.split('_')
+#     if answer[1] == "confirm":
+#         await update_user_ton_addr(callback.from_user.id, data['address'])
+#         await callback.message.answer(text=f'Ваш кошелек был добавлен!',
+#                                       reply_markup=keyboards_main())
+#         await callback.message.answer('Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - канале'
+#                                       ' @shoptalkrn',
+#                                       reply_markup=keyboard_cancel())
+#         await state.set_state(UserAnketa.Anketa)
+#     else:
+#         await callback.message.answer(text=f'Ваш кошелек не был добавлен! Отправьте его снова!',
+#                                       reply_markup=keyboards_main())
+#         await state.set_state(UserAnketa.address)
+
+
+@router.callback_query(F.text, StateFilter(UserAnketa.email))
+async def confirm_email(callback: CallbackQuery, state: FSMContext):
+    """Получение адреса почты"""
+    logging.info(f'confirm_email: {callback.from_user.id}')
+    await callback.message.answer('Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - канале'
+                                  ' @shoptalkrn',
+                                  reply_markup=keyboard_cancel())
     await state.set_state(UserAnketa.address)
-
-
-@router.callback_query(F.data == 'create_wallet')
-async def create_wallet(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    """Видео-инструкция по созданию кошелька"""
-    logging.info(f'create_wallet: {callback.message.from_user.id}')
-    await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
-    await callback.message.answer_video(video='BAACAgIAAxkBAAIG-mZ1D3n8x06fBosGaw290DPk6R91AAJlRwACuTmwS3Ys7U1g_Pa3NQQ',
-                                        caption='Создайте кошелек по видео инструкции')
-    await asyncio.sleep(5)
-    await make_anketa_(message=callback.message, state=state)
-
-
-@router.callback_query(F.data == 'pass_wallet')
-async def pass_state(callback: CallbackQuery, state: FSMContext):
-    """Пропустить ввод номера кошелька. Запрос на ссылку на вакансию"""
-    logging.info(f'pass_state: {callback.message.from_user.id}')
-    keyboard = keyboard_cancel()
-    await callback.message.edit_text(text='Отправьте ссылку (номер) вакансии. Вы можете найти их в Телеграм'
-                                          ' - канале @shoptalkrn',
-                                     reply_markup=keyboard)
-    await state.set_state(UserAnketa.Anketa)
-
-
-@router.message(UserAnketa.address)
-async def confirm_address(message: Message, state: FSMContext):
-    """Получаем номер кошелька. С проверкой введенного номера кошелька на валидность"""
-    logging.info(f'confirm_address: {message.from_user.id}')
-    await state.update_data(address=message.text)
-    if await check_valid_addr(message.text):
-        # link_wallet_test = f"https: // testnet.tonviewer.com / {message.text}"
-        link_wallet = f"https://tonviewer.com/{message.text}"
-        await message.answer(text=f'Ваш кошелек: <a href="{link_wallet}">{message.text}</a>\n\nПодтверждаете?',
-                             parse_mode='html',
-                             reply_markup=yes_or_no_addr(),
-                             link_preview_options=LinkPreviewOptions(is_disabled=True))
-    else:
-        await message.answer(text=f'Данный адрес не валиден! Отправьте еще раз.',
-                             reply_markup=keyboard_cancel())
-    await state.set_state(default_state)
-
-
-@router.callback_query(F.data.startswith('address_'))
-async def confirm_address_yes_or_no(callback: CallbackQuery, state: FSMContext):
-    """Подтверждение введенного номера кошелька"""
-    logging.info(f'confirm_address_y_n: {callback.from_user.id}')
-    data = await state.get_data()
-    answer = callback.data.split('_')
-    if answer[1] == "confirm":
-        await update_user_ton_addr(callback.from_user.id, data['address'])
-        await callback.message.answer(text=f'Ваш кошелек был добавлен!',
-                                      reply_markup=keyboards_main())
-        await callback.message.answer('Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - канале'
-                                      ' @shoptalkrn',
-                                      reply_markup=keyboard_cancel())
-        await state.set_state(UserAnketa.Anketa)
-    else:
-        await callback.message.answer(text=f'Ваш кошелек не был добавлен! Отправьте его снова!',
-                                      reply_markup=keyboards_main())
-        await state.set_state(UserAnketa.address)
 
 
 @router.message(UserAnketa.Anketa)

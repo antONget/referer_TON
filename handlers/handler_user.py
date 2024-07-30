@@ -14,7 +14,7 @@ from database.requests import add_user, get_balance, get_referral_users, get_ref
     get_user_ton_addr_by_id, update_user_ton_addr
 from keyboards.keyboard_user import keyboards_subscription, keyboards_main, yes_or_no, on_work, confirm, yes_or_no_addr,\
     pass_the_state, keyboards_get_contact, keyboard_confirm_phone, keyboard_cancel, keyboard_vacancy, \
-    keyboard_confirm_cantact_date, pass_the_state_menu
+    keyboard_confirm_cantact_date, pass_the_state_menu, keyboards_main_second
 
 from TonCrypto.contract.CryptoHelper import TonWallet, check_valid_addr, get_ton_in_rub
 
@@ -183,6 +183,16 @@ async def press_main_menu(message: Message):
                 f'✅ узнать свой баланс;\n'
                 f'✅ посмотреть список приглашенных людей.',
         reply_markup=keyboards_main())
+
+
+@router.message(F.text == 'Личный кабинет')
+async def press_personal(message: Message, state: FSMContext):
+    """
+    Мой кабинет
+    """
+    logging.info(f'press_personal: {message.from_user.id}')
+    await message.answer(text='Выберите раздел',
+                         reply_markup=keyboards_main_second())
 
 
 @router.message(F.text == 'Мой кошелек')

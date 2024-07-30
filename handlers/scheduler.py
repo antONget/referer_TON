@@ -48,13 +48,14 @@ async def send_ton(bot: Bot):
                 # получаем дату текущую
                 list_date_today = date_today_str.split('/')
                 date_today = date(int(list_date_today[2]), int(list_date_today[1]), int(list_date_today[0]))
-                # получаем дату заполнения анкеты
+                # получаем дату заполнения анкеты и если она не пустая или не равна date_work
                 if item[first_row.index("date_work")] not in ['', "date_work"]:
                     list_date_work = item[first_row.index("date_work")].split('/')
                 else:
                     continue
+                # формируем дату выхода на работу
                 date_work = date(int(list_date_work[2]), int(list_date_work[1]), int(list_date_work[0]))
-                # если прошел месяц (30 дней)
+                # если прошло указанное количество дней
                 if date_today >= date_work:
                     # получаем информацию о пользователе
                     user = await get_user_from_id(user_id=int(item[first_row.index("id_telegram_referal")]))
@@ -89,9 +90,9 @@ async def send_ton(bot: Bot):
                                        bot_token=config.tg_bot.token)
             if 'result' in result:
                 try:
-                    await bot.send_message(chat_id=int(id_superadmin),
-                                           text=f'Подтвердите начисление пользователю {anketa["username_referal"]}',
-                                           reply_markup=keyboards_confirm_pay(id_anketa=anketa['id_anketa']))
+                    msg = await bot.send_message(chat_id=int(id_superadmin),
+                                                 text=f'Подтвердите начисление пользователю {anketa["username_referal"]}',
+                                                 reply_markup=keyboards_confirm_pay(id_anketa=anketa['id_anketa']))
                 except:
                     pass
     # если список пустой, то информируем админа

@@ -72,28 +72,28 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
         # !!! получаем количество TON по курсу
         amount_ton = await get_ton_in_rub(amount=amount) / 1000
         # пользователю начисляем 50% от суммы
-        amount_user_ton = round(amount_ton / 2, 2)
+        # amount_user_ton = round(amount_ton / 2, 2)
         # производим начисление вознаграждения
-        tr = await TonWallet.transfer(amount=amount_user_ton, to_addr=user_addr)
+        # tr = await TonWallet.transfer(amount=amount_user_ton, to_addr=user_addr)
         # если платеж прошел
-        if tr == 'ok':
+        # if tr == 'ok':
             # увеличиваем баланс пользователя
-            await increase_ton_balance(tg_id=int(info_anketa[1]), s=amount_user_ton)
-            # изменяем статус анкеты в гугл-таблице
-            update_status_anketa(status='💰', telegram_id=int(info_anketa[1]))
-            # изменяем статус пользователя в БД
-            await update_status(int(info_anketa[1]), UserStatus.payed)
+            # await increase_ton_balance(tg_id=int(info_anketa[1]), s=amount_user_ton)
+        # изменяем статус анкеты в гугл-таблице
+        update_status_anketa(status='💰', telegram_id=int(info_anketa[1]))
+        # изменяем статус пользователя в БД
+        await update_status(int(info_anketa[1]), UserStatus.payed)
 
-            try:
-                # отправляем пользователя сообщение
-                await bot.send_message(chat_id=int(info_anketa[1]),
-                                       text=f'Вам было отправлено {amount_user_ton} TON\n\n'
-                                            f'Проверьте ваш <a href="https://tonscan.org/address/{user_addr}">'
-                                            f'кошелек.</a>',
-                                       parse_mode='html',
-                                       link_preview_options=LinkPreviewOptions(is_disabled=True))
-            except:
-                pass
+            # try:
+            #     # отправляем пользователя сообщение
+            #     await bot.send_message(chat_id=int(info_anketa[1]),
+            #                            text=f'Вам было отправлено {amount_user_ton} TON\n\n'
+            #                                 f'Проверьте ваш <a href="https://tonscan.org/address/{user_addr}">'
+            #                                 f'кошелек.</a>',
+            #                            parse_mode='html',
+            #                            link_preview_options=LinkPreviewOptions(is_disabled=True))
+            # except:
+            #     pass
         # если у пользователя есть реферал
         if int(info_anketa[3]):
             # производим начисление вознаграждения

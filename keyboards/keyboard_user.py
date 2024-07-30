@@ -9,14 +9,38 @@ def keyboards_subscription():
     return keyboard
 
 
+# def keyboards_main() -> ReplyKeyboardMarkup:
+#     logging.info("keyboards_main")
+#     button_1 = KeyboardButton(text='Заполнить анкету на вакансию')
+#     button_2 = KeyboardButton(text='Пригласить реферала')
+#     button_3 = KeyboardButton(text='Баланс')
+#     button_4 = KeyboardButton(text='Список рефералов')
+#     keyboard = ReplyKeyboardMarkup(
+#         keyboard=[[button_1], [button_2], [button_3], [button_4]],
+#         resize_keyboard=True
+#     )
+#     return keyboard
+
 def keyboards_main() -> ReplyKeyboardMarkup:
     logging.info("keyboards_main")
     button_1 = KeyboardButton(text='Заполнить анкету на вакансию')
+    button_2 = KeyboardButton(text='Личный кабинет')
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[[button_1], [button_2]],
+        resize_keyboard=True
+    )
+    return keyboard
+
+
+def keyboards_main_second() -> ReplyKeyboardMarkup:
+    logging.info("keyboards_main")
+    button_1 = KeyboardButton(text='Мой кошелек')
     button_2 = KeyboardButton(text='Пригласить реферала')
     button_3 = KeyboardButton(text='Баланс')
     button_4 = KeyboardButton(text='Список рефералов')
+    button_5 = KeyboardButton(text='Главное меню')
     keyboard = ReplyKeyboardMarkup(
-        keyboard=[[button_1], [button_2], [button_3], [button_4]],
+        keyboard=[[button_1], [button_2], [button_3], [button_4], [button_5]],
         resize_keyboard=True
     )
     return keyboard
@@ -97,6 +121,14 @@ def pass_the_state():
     )
     return keyboard
 
+
+def pass_the_state_menu():
+    logging.info("pass_the_state_menu")
+    button_2 = InlineKeyboardButton(text='Как создать кошелек?', callback_data='create_wallet')
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[[button_2]],
+    )
+    return keyboard
 
 def on_work(id_anketa: int):
     logging.info("on_work")

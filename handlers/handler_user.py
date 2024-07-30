@@ -14,7 +14,7 @@ from database.requests import add_user, get_balance, get_referral_users, get_ref
     get_user_ton_addr_by_id, update_user_ton_addr
 from keyboards.keyboard_user import keyboards_subscription, keyboards_main, yes_or_no, on_work, confirm, yes_or_no_addr,\
     pass_the_state, keyboards_get_contact, keyboard_confirm_phone, keyboard_cancel, keyboard_vacancy, \
-    keyboard_confirm_cantact_date
+    keyboard_confirm_cantact_date, pass_the_state_menu
 
 from TonCrypto.contract.CryptoHelper import TonWallet, check_valid_addr, get_ton_in_rub
 
@@ -62,6 +62,19 @@ class ChannelProtect(Filter):
                                  reply_markup=keyboards_subscription(),
                                  parse_mode='html')
         return False
+
+
+class UserAnketa(StatesGroup):
+    Anketa = State()
+    username = State()
+    phone = State()
+    city = State()
+    email = State()
+    address = State()
+    confirm_addr = State()
+    confirm = State()
+    id = State()
+    address_menu = State()
 
 
 @router.message(ChannelProtect(), CommandStart())
@@ -154,6 +167,53 @@ async def user_subscription(message: Message | CallbackQuery):
         )
 
 
+@router.message(F.text == 'Главное меню')
+async def press_main_menu(message: Message):
+    """
+    Главное меню
+    """
+    logging.info(f'press_main_menu: {message.from_user.id}')
+    await message.answer_photo(
+        photo='AgACAgIAAxkBAAINSWaieYcjePwjwQiprPXvjuUAAUQpMQAC4d4xG_w4GEncY55Kk2uk_gEAAwIAA3kAAzUE',
+        caption=f'Привет! 👋\n'
+                f'Это бот реферальной системы.\n\n'
+                f'Тут вы сможете:\n'
+                f'✅ заполнить анкету на вакансию;\n'
+                f'✅ скопировать свою реферальную ссылку и пригласить по ней друга;\n'
+                f'✅ узнать свой баланс;\n'
+                f'✅ посмотреть список приглашенных людей.',
+        reply_markup=keyboards_main())
+
+
+@router.message(F.text == 'Мой кошелек')
+async def press_my_wallet(message: Message, state: FSMContext):
+    """
+    Ввод адреса кошелька
+    """
+    logging.info(f'press_my_wallet: {message.from_user.id}')
+    await message.answer(text=f'Отправьте адрес вашего электронного кошелька для вознаграждения.\n\n'
+                              f'Используйте реферальную программу и получайте TON за приглашенных друзей.\n\n'
+                              f'Видео-инструкция по созданию кошелька в «Как создать кошелек?»\n'
+                              f'Бот для создания кошелька — @wallet.\n\n'
+                              f'/cancel для отмены',
+                         reply_markup=pass_the_state_menu())
+    await state.set_state(UserAnketa.address_menu)
+
+
+@router.message(UserAnketa.address_menu)
+async def confirm_address_menu(message: Message, state: FSMContext):
+    """Получаем номер кошелька. С проверкой введенного номера кошелька на валидность"""
+    logging.info(f'confirm_address_menu: {message.from_user.id}')
+    await state.update_data(address=message.text)
+    if await check_valid_addr(message.text):
+        await update_user_ton_addr(message.chat.id, message.text)
+        await message.answer(text=f'Адрес кошелька успешно добавлен')
+    else:
+        await message.answer(text=f'Данный адрес не валиден! Отправьте еще раз.',
+                             reply_markup=keyboard_cancel())
+    await state.clear()
+
+
 @router.message(F.text == 'Баланс')
 async def get_user_balance(message: Message):
     """
@@ -196,16 +256,7 @@ async def get_list_referrals(message: Message):
         await message.answer(text='В вашем списке никого нет!')
 
 
-class UserAnketa(StatesGroup):
-    Anketa = State()
-    username = State()
-    phone = State()
-    city = State()
-    email = State()
-    address = State()
-    confirm_addr = State()
-    confirm = State()
-    id = State()
+
 
 
 @router.message(Command('cancel'))
@@ -386,6 +437,7 @@ async def confirm_address(message: Message, state: FSMContext):
     else:
         await message.answer(text=f'Данный адрес не валиден! Отправьте еще раз.',
                              reply_markup=keyboard_cancel())
+    await state.set_state(default_state)
 
 
 @router.callback_query(F.data.startswith('address_'))

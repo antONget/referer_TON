@@ -492,7 +492,7 @@ async def confirm_email(message: Message, state: FSMContext):
     await message.answer(text='Пришлите ссылку (номер) вакансии. Вы можете найти ее в Телеграм - канале'
                               ' @shoptalkrn',
                          reply_markup=keyboard_cancel())
-    await state.set_state(UserAnketa.address)
+    await state.set_state(UserAnketa.Anketa)
 
 
 @router.message(UserAnketa.Anketa)

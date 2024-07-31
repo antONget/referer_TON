@@ -39,7 +39,7 @@ class BotWallet:
         Path(self.keystore_dir).mkdir(parents=True, exist_ok=True)
 
         # make a client
-        self.client = TonlibClient(ls_index=2, config=self.config, keystore=self.keystore_dir, tonlib_timeout=20)
+        self.client = TonlibClient(ls_index=14, config=self.config, keystore=self.keystore_dir, tonlib_timeout=30)
 
         # for further work with transaction verification
         self.last_balance1 = None
@@ -70,31 +70,40 @@ class BotWallet:
         return True
 
     # Function that checks the previous balance for comparison with the new one
-    async def get_last_balances(self):
-        logging.info(f'get_last_balances: dest_addr - {self.dest_addr}')
-
+    async def get_last_balances(self, dest_addr: str = None):
+        # await self.client.init()
+        logging.info(f'get_last_balances')
+        if isinstance(dest_addr, str):
+            self.dest_addr = dest_addr
+        else:
+            return "wrong addr"
         # получаем баланс в нанотонах на заказчика
-        self.last_balance1 = from_nano(int((await self.client.raw_get_account_state(self.addr))['balance']), 'ton')
+        last_b1 = await self.client.raw_get_account_state(self.addr)
+        self.last_balance1 = int((last_b1)['balance'])
         logging.info(f'last_balance1: {self.last_balance1}')
+
+
         # получаем баланс на кошельке получателя
-        self.last_balance2 = from_nano(int((await self.client.raw_get_account_state(self.dest_addr))['balance']), 'ton')
+        last_b2 = await self.client.raw_get_account_state(self.dest_addr)
+        self.last_balance2 = int((last_b2)['balance'])
         logging.info(f'last_balance2: {self.last_balance2}')
-        # making them from nanocoins to coins
-        return from_nano(int(self.last_balance1), 'ton'), from_nano(int(self.last_balance2), 'ton')
+        
+        return 
 
     async def is_success(self, amount: int | float):
         # await self.client.init() # for test
 
-        amount = from_nano(amount, 'ton')
+        amount = to_nano(amount, 'ton')
 
-        new_balance1 = from_nano(int((await self.client.raw_get_account_state(self.addr))['balance']), 'ton')
-        new_balance2 = from_nano(int((await self.client.raw_get_account_state(self.dest_addr))['balance']), 'ton')
+        new_balance1 = int((await self.client.raw_get_account_state(self.addr))['balance'])
+        new_balance2 = int((await self.client.raw_get_account_state(self.dest_addr))['balance'])
 
         # print(new_balance1, new_balance2)
         # print(self.last_balance1, self.last_balance2)
+        # print(self.last_balance1 - amount, self.last_balance2 + amount)
 
         # Checking for debiting funds
-        return self.last_balance1 - amount <= new_balance1 and self.last_balance2 + amount >= new_balance2
+        return (self.last_balance1 - amount <= new_balance1) and (self.last_balance2 + amount >= new_balance2)
 
     # transfers amount to address
     async def transfer(self, amount: int | float, to_addr: str):
@@ -119,40 +128,38 @@ class BotWallet:
         # logging.info(f'amount: {amount} type(amount): {type(amount)}')
         self.amount = to_nano(amount, 'ton')
         # logging.info(f'amount_to_nano: {amount}')
-        try:
-            # проверка что, на кошельке достаточно для списания amount TON
-            # logging.info(f'check_balance(): {await self.check_balance()}')
-            if await self.check_balance():
+        # try:
+        # проверка что, на кошельке достаточно для списания amount TON
+        # logging.info(f'check_balance(): {await self.check_balance()}')
+        if await self.check_balance():
 
-                # getting last balances before transaction
-                # await self.get_last_balances()
+            # getting last balances before transaction
+            await self.get_last_balances(dest_addr=to_addr)
 
-                # make transaction query
-                transfer_query = self.wallet.create_transfer_message(to_addr=self.dest_addr,
-                                                                     amount=self.amount,
-                                                                     seqno=seqno,
-                                                                     payload='hello from pasha')
+            # make transaction query
+            transfer_query = self.wallet.create_transfer_message(to_addr=self.dest_addr,
+                                                                    amount=self.amount,
+                                                                    seqno=seqno)
+            # getting boc data
+            boc: Cell = transfer_query['message'].to_boc(False)
 
-                # getting boc data
-                boc: Cell = transfer_query['message'].to_boc(False)
+            # sending information to blockchain
+            ans = await self.client.raw_send_message(boc)
 
-                # sending information to blockchain
-                ans = await self.client.raw_send_message(boc)
-
-                await asyncio.sleep(2)
-                print(ans)
-                # checking the result of transaction
-                if ans["@type"] != 'ok':
-                    return ans
-                else:
-                    if await self.is_success(amount=amount):
-                        return 'ok'
-                    else:
-                        return 'false'
+            # await asyncio.sleep(2)
+            # print(ans)
+            # checking the result of transaction
+            if ans["@type"] != 'ok':
+                return ans
             else:
-                return 'not enough money'
-        except Exception as e:
-            return f'error: {e}'
+                if await self.is_success(amount=amount):
+                    return 'ok'
+                else:
+                    return 'false'
+        else:
+            return 'not enough money'
+        # except Exception as e:
+        #     return f'!error: {e}'
 
 
 async def check_valid_addr(addr: str):

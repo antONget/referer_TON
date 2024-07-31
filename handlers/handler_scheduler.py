@@ -97,8 +97,11 @@ async def process_cancel_pay(callback: CallbackQuery, bot: Bot):
             #     pass
         # если у пользователя есть реферал
         if int(info_anketa[3]):
+            ref_addr = await get_user_ton_addr_by_id(int(info_anketa[3]))
             # производим начисление вознаграждения
-            tr = await TonWallet.transfer(amount={amount_ton}, to_addr=user_addr)
+            print("amount_ton", amount_ton, "ref_addr", ref_addr)
+            tr = await TonWallet.transfer(amount=amount_ton, to_addr=ref_addr)
+            logging.info(f'tr: {tr}')
             # если платеж прошел успешно
             if tr == 'ok':
                 # увеличиваем баланс

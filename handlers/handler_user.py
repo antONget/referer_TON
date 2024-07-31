@@ -569,12 +569,14 @@ async def confirm_anketa(callback: CallbackQuery, state: FSMContext, bot: Bot):
                       vacancy=vacancy,
                       date_anketa=date_today)
         # пауза 3 сек
-        await asyncio.sleep(3)
+        await asyncio.sleep(1)
         # удаляем сообщение, что данные отправляются
         await bot.delete_message(chat_id=callback.message.chat.id,
                                  message_id=msg.message_id)
         await callback.answer(text='Отлично, ваша анкета отправлена!',
                               show_alert=True)
+        # обновляем статус пользователя на 'on_work
+        await update_status(callback.from_user.id, UserStatus.on_work)
         await callback.message.answer(text='Благодарим за заполнение анкеты! \n\n'
                                            'Начисление TON  произведется по окончанию первого месяца работы.')
         # await callback.message.answer(text='Для оперативного начисления TON после месяца работы нажми на кнопку'
@@ -588,201 +590,201 @@ async def confirm_anketa(callback: CallbackQuery, state: FSMContext, bot: Bot):
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith('wishton_'))
-async def want_ton(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    """
-    Пользователь запросил начисление TON. Подтверждение админом начисления
-    """
-    # информируем пользователя
-    await callback.answer(text='Информация направлена администратору и после подтверждения вам будет начислено'
-                               ' вознаграждение. Спасибо!',
-                          show_alert=True)
-    # удаляем у него сообщение
-    await bot.delete_message(chat_id=callback.message.chat.id,
-                             message_id=callback.message.message_id)
-    # обновляем данные словаря
-    user_dict[callback.message.chat.id] = await state.get_data()
-    # получаем ссылку на вакансию
-    anketa = user_dict[callback.message.chat.id]['anketa']
-    # получаем строку из гугл-таблицы
-    id_anketa = user_dict[callback.message.chat.id]['id_anketa']
-    info_anketa = get_list_anketa(id_anketa=id_anketa)
-    # формируем строку вакансии
-    vacancy = ''
-    amount = 0
-    if info_anketa[10] == 'merchandiser':
-        vacancy = '#мерчандайзер'
-        amount = 2000
-    elif info_anketa[10] == 'mysteryShopper':
-        vacancy = '#тайныйпокупатель'
-        amount = 1000
-    elif info_anketa[10] == 'consultant':
-        vacancy = '#продавецконсультант'
-        amount = 5000
-    # обновляем статус пользователя на 'on_work
-    await update_status(callback.from_user.id, UserStatus.on_work)
-    # проходим по списку администраторов
-    for admin_id in config.tg_bot.admin_ids.split(','):
-        try:
-            # информируем администратора о том что пользователь хочет получить вознаграждение
-            await bot.send_message(chat_id=int(admin_id),
-                                   text=f'Пользователь @{callback.from_user.username if callback.from_user.username else f"None-{callback.from_user.id}"}, откликнувшийся на вакансию:\n'
-                                        f' {anketa} - {vacancy},'
-                                        f' вышел на работу.\n'
-                                        f'Подтвердите это изменение сведения в гугл таблице строка № {id_anketa}')
-            await bot.send_message(chat_id=int(admin_id),
-                                   text=f'Подтвердите начисление пользователю @{callback.from_user.username if callback.from_user.username else f"None-{callback.from_user.id}"} '
-                                        f'{amount / 2} руб.',
-                                   reply_markup=confirm(user_id=callback.message.chat.id, vacancy=info_anketa[10]))
-        except:
-            pass
-    await state.set_state(default_state)
-    await callback.answer()
-
-
-@router.callback_query(F.data.startswith('confirm_pay_'))
-async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
-    """
-    Начисление TON подтверждено
-    """
-    logging.info(f'transfer_pay_to: {callback.data.split("_")[-1]}')
-    # deleting the message from which update was called
-    await bot.delete_message(chat_id=callback.message.chat.id,
-                             message_id=callback.message.message_id)
-    # we get the telegram id of the user who requested the TON charge from callback.data
-    user_to_pay = int(callback.data.split('_')[-1])
-    vacancy = callback.data.split('_')[-2]
-    # changing the status in the status cell for the user on '✅'
-    update_status_anketa(status='✅', telegram_id=user_to_pay)
-    # we get the wallet address for charging TON
-    user_ton_addr = await get_user_ton_addr_by_id(user_to_pay)
-    try:
-        # получаем информацию о пользователе по его id телеграм
-        user = await get_user_from_id(user_to_pay)
-        # если статус его не равен "payed"
-        if user.status != UserStatus.payed:
-            amount = 0
-            # получаем количество рублей для оплаты вознаграждения
-            if vacancy == 'merchandiser':
-                amount = 2000
-            elif vacancy == 'mysteryShopper':
-                amount = 1000
-            elif vacancy == 'consultant':
-                amount = 5000
-            # получаем количество TON по курсу
-            amount_ton = await get_ton_in_rub(amount=amount)
-            # пользователю начисляем 50% от суммы
-            amount_user_ton = amount_ton / 2
-            # производим начисление
-            transaction = await TonWallet.transfer(amount=amount_user_ton,
-                                                   to_addr=user_ton_addr)
-            # если статус платежа 'ok'
-            if transaction == 'ok':
-                # увеличиваем баланс пользователя
-                await increase_ton_balance(tg_id=user_to_pay, s=amount_user_ton)
-                # изменяем статус в гугл-таблице
-                update_status_anketa(status='💰', telegram_id=user_to_pay)
-                # изменяем статус в БД
-                await update_status(user_to_pay, UserStatus.payed)
-                # информируем админа об отправке вознаграждения
-                await callback.message.answer(
-                    f'✅ Пользователю @{await _get_username_from_id(user_to_pay)} отправлено <strong>{amount_user_ton} TON</strong>',
-                    parse_mode='html')
-                try:
-                    # информируем пользователя, что ему начислено вознаграждение
-                    await bot.send_message(chat_id=user_to_pay,
-                                           text=f'Вам было отправлено {amount_user_ton} TON\n\n'
-                                                f'Проверьте ваш кошелек'
-                                                f' <a href="https://tonscan.org/address/{user_ton_addr}">кошелек.</a>',
-                                           parse_mode='html',
-                                           link_preview_options=LinkPreviewOptions(is_disabled=True))
-                except:
-                    pass
-            # если статус нет денег
-            elif transaction == 'not enough money':
-                # отправляем админам информационное сообщение
-                for admin_id in config.tg_bot.admin_ids.split(','):
-                    try:
-                        await bot.send_message(chat_id=int(admin_id),
-                                               text=f'❗️Что-то пошло не так, и пользователю'
-                                                    f' @{await _get_username_from_id(user_to_pay)} не пришло {amount_user_ton} TON,'
-                                                    f' проверьте кошелек, скорее всего там недостаточно средств!')
-                    except:
-                        pass
-            # если возникла ошибка
-            elif transaction.startswith('error'):
-                # информируем администраторов
-                for admin_id in config.tg_bot.admin_ids.split(','):
-                    try:
-                        await bot.send_message(chat_id=int(admin_id),
-                                               text=f'❗️Что-то пошло не так, и пользователю'
-                                                    f' @{await _get_username_from_id(user_to_pay)} не пришло {amount_user_ton} TON,'
-                                                    f' что-то пошло не так! Проверьте списание средств!')
-                    except:
-                        pass
-            # получаем id телеграм реферера
-            referer = user.referer_id
-            # если он есть
-            if referer:
-                # начисляем 100% от суммы
-                transaction = await TonWallet.transfer(amount=amount_ton,
-                                                       to_addr=user_ton_addr)
-                # если платеж прошел
-                if transaction == 'ok':
-                    # увеличиваем баланс
-                    await increase_ton_balance(tg_id=user_to_pay, s=amount_ton)
-                    # информируем реферера о вознагрождении
-                    await bot.send_message(chat_id=referer,
-                                           text=f'Вам отправлено <strong>{amount_ton} TON</strong> за приглашенного пользователя'
-                                                f' @{await _get_username_from_id(user_to_pay)}',
-                                           parse_mode='html')
-                elif transaction == 'not enough money':
-                    for admin_id in config.tg_bot.admin_ids.split(','):
-                        try:
-                            await bot.send_message(chat_id=int(admin_id),
-                                                   text=f'❗️Что-то пошло не так, и пользователю @{await _get_username_from_id(referer)}'
-                                                        f' за приглашенного @{await _get_username_from_id(user_to_pay)} не пришло {amount_ton} TON,'
-                                                        f' проверьте кошелек, скорее всего там недостаточно средств!')
-                        except:
-                            pass
-                elif transaction.startswith('error'):
-                    for admin_id in config.tg_bot.admin_ids.split(','):
-                        try:
-                            await bot.send_message(chat_id=int(admin_id),
-                                                   text=f'❗️Что-то пошло не так, и пользователю'
-                                                        f' @{await _get_username_from_id(user_to_pay)} не пришло {amount_ton} TON,'
-                                                        f' что-то пошло не так! Проверьте списание средств!')
-                        except:
-                            pass
-        # пользователь уже получал вознаграждение по этой вакансии
-        else:
-            await callback.answer(text=f'Пользователь уже получил вознаграждение!',
-                                  show_alert=True)
-    except Exception as e:
-        logging.error(f'ERROR: {e}')
-    await callback.answer()
-
-
-@router.callback_query(F.data.startswith('cancel_pay_'))
-async def cancel_pay(callback: CallbackQuery, bot: Bot, state: FSMContext):
-    """
-    Отмена начисления вознаграждения
-    """
-    logging.info(f'cancel_pay: {callback.data.split("_")[-1]}')
-    await callback.answer()
-    # id телеграм пользователя запросившего начисление TON
-    user_to_pay = int(callback.data.split('_')[-1])
-    # обновляем статус пользователя в БД
-    await update_status(user_to_pay, UserStatus.not_payed)
-    # информируем админа
-    await callback.message.answer(text=f'❌ Пользователю @{await _get_username_from_id(user_to_pay)} оплата'
-                                       f' не отправлена',
-                                  parse_mode='html')
-    try:
-        # информируем пользователя
-        await bot.send_message(chat_id=user_to_pay,
-                               text='Оплата была не одобрена администрацией')
-    except:
-        pass
-    # обновляем статус анкеты в гугл-таблице
-    update_status_anketa(status='❌', telegram_id=user_to_pay)
+# @router.callback_query(F.data.startswith('wishton_'))
+# async def want_ton(callback: CallbackQuery, state: FSMContext, bot: Bot):
+#     """
+#     Пользователь запросил начисление TON. Подтверждение админом начисления
+#     """
+#     # информируем пользователя
+#     await callback.answer(text='Информация направлена администратору и после подтверждения вам будет начислено'
+#                                ' вознаграждение. Спасибо!',
+#                           show_alert=True)
+#     # удаляем у него сообщение
+#     await bot.delete_message(chat_id=callback.message.chat.id,
+#                              message_id=callback.message.message_id)
+#     # обновляем данные словаря
+#     user_dict[callback.message.chat.id] = await state.get_data()
+#     # получаем ссылку на вакансию
+#     anketa = user_dict[callback.message.chat.id]['anketa']
+#     # получаем строку из гугл-таблицы
+#     id_anketa = user_dict[callback.message.chat.id]['id_anketa']
+#     info_anketa = get_list_anketa(id_anketa=id_anketa)
+#     # формируем строку вакансии
+#     vacancy = ''
+#     amount = 0
+#     if info_anketa[10] == 'merchandiser':
+#         vacancy = '#мерчандайзер'
+#         amount = 2000
+#     elif info_anketa[10] == 'mysteryShopper':
+#         vacancy = '#тайныйпокупатель'
+#         amount = 1000
+#     elif info_anketa[10] == 'consultant':
+#         vacancy = '#продавецконсультант'
+#         amount = 5000
+#     # обновляем статус пользователя на 'on_work
+#     await update_status(callback.from_user.id, UserStatus.on_work)
+#     # проходим по списку администраторов
+#     for admin_id in config.tg_bot.admin_ids.split(','):
+#         try:
+#             # информируем администратора о том что пользователь хочет получить вознаграждение
+#             await bot.send_message(chat_id=int(admin_id),
+#                                    text=f'Пользователь @{callback.from_user.username if callback.from_user.username else f"None-{callback.from_user.id}"}, откликнувшийся на вакансию:\n'
+#                                         f' {anketa} - {vacancy},'
+#                                         f' вышел на работу.\n'
+#                                         f'Подтвердите это изменение сведения в гугл таблице строка № {id_anketa}')
+#             await bot.send_message(chat_id=int(admin_id),
+#                                    text=f'Подтвердите начисление пользователю @{callback.from_user.username if callback.from_user.username else f"None-{callback.from_user.id}"} '
+#                                         f'{amount / 2} руб.',
+#                                    reply_markup=confirm(user_id=callback.message.chat.id, vacancy=info_anketa[10]))
+#         except:
+#             pass
+#     await state.set_state(default_state)
+#     await callback.answer()
+#
+#
+# @router.callback_query(F.data.startswith('confirm_pay_'))
+# async def transfer_pay_to(callback: CallbackQuery, bot: Bot, state: FSMContext):
+#     """
+#     Начисление TON подтверждено
+#     """
+#     logging.info(f'transfer_pay_to: {callback.data.split("_")[-1]}')
+#     # deleting the message from which update was called
+#     await bot.delete_message(chat_id=callback.message.chat.id,
+#                              message_id=callback.message.message_id)
+#     # we get the telegram id of the user who requested the TON charge from callback.data
+#     user_to_pay = int(callback.data.split('_')[-1])
+#     vacancy = callback.data.split('_')[-2]
+#     # changing the status in the status cell for the user on '✅'
+#     update_status_anketa(status='✅', telegram_id=user_to_pay)
+#     # we get the wallet address for charging TON
+#     user_ton_addr = await get_user_ton_addr_by_id(user_to_pay)
+#     try:
+#         # получаем информацию о пользователе по его id телеграм
+#         user = await get_user_from_id(user_to_pay)
+#         # если статус его не равен "payed"
+#         if user.status != UserStatus.payed:
+#             amount = 0
+#             # получаем количество рублей для оплаты вознаграждения
+#             if vacancy == 'merchandiser':
+#                 amount = 2000
+#             elif vacancy == 'mysteryShopper':
+#                 amount = 1000
+#             elif vacancy == 'consultant':
+#                 amount = 5000
+#             # получаем количество TON по курсу
+#             amount_ton = await get_ton_in_rub(amount=amount)
+#             # пользователю начисляем 50% от суммы
+#             amount_user_ton = amount_ton / 2
+#             # производим начисление
+#             transaction = await TonWallet.transfer(amount=amount_user_ton,
+#                                                    to_addr=user_ton_addr)
+#             # если статус платежа 'ok'
+#             if transaction == 'ok':
+#                 # увеличиваем баланс пользователя
+#                 await increase_ton_balance(tg_id=user_to_pay, s=amount_user_ton)
+#                 # изменяем статус в гугл-таблице
+#                 update_status_anketa(status='💰', telegram_id=user_to_pay)
+#                 # изменяем статус в БД
+#                 await update_status(user_to_pay, UserStatus.payed)
+#                 # информируем админа об отправке вознаграждения
+#                 await callback.message.answer(
+#                     f'✅ Пользователю @{await _get_username_from_id(user_to_pay)} отправлено <strong>{amount_user_ton} TON</strong>',
+#                     parse_mode='html')
+#                 try:
+#                     # информируем пользователя, что ему начислено вознаграждение
+#                     await bot.send_message(chat_id=user_to_pay,
+#                                            text=f'Вам было отправлено {amount_user_ton} TON\n\n'
+#                                                 f'Проверьте ваш кошелек'
+#                                                 f' <a href="https://tonscan.org/address/{user_ton_addr}">кошелек.</a>',
+#                                            parse_mode='html',
+#                                            link_preview_options=LinkPreviewOptions(is_disabled=True))
+#                 except:
+#                     pass
+#             # если статус нет денег
+#             elif transaction == 'not enough money':
+#                 # отправляем админам информационное сообщение
+#                 for admin_id in config.tg_bot.admin_ids.split(','):
+#                     try:
+#                         await bot.send_message(chat_id=int(admin_id),
+#                                                text=f'❗️Что-то пошло не так, и пользователю'
+#                                                     f' @{await _get_username_from_id(user_to_pay)} не пришло {amount_user_ton} TON,'
+#                                                     f' проверьте кошелек, скорее всего там недостаточно средств!')
+#                     except:
+#                         pass
+#             # если возникла ошибка
+#             elif transaction.startswith('error'):
+#                 # информируем администраторов
+#                 for admin_id in config.tg_bot.admin_ids.split(','):
+#                     try:
+#                         await bot.send_message(chat_id=int(admin_id),
+#                                                text=f'❗️Что-то пошло не так, и пользователю'
+#                                                     f' @{await _get_username_from_id(user_to_pay)} не пришло {amount_user_ton} TON,'
+#                                                     f' что-то пошло не так! Проверьте списание средств!')
+#                     except:
+#                         pass
+#             # получаем id телеграм реферера
+#             referer = user.referer_id
+#             # если он есть
+#             if referer:
+#                 # начисляем 100% от суммы
+#                 transaction = await TonWallet.transfer(amount=amount_ton,
+#                                                        to_addr=user_ton_addr)
+#                 # если платеж прошел
+#                 if transaction == 'ok':
+#                     # увеличиваем баланс
+#                     await increase_ton_balance(tg_id=user_to_pay, s=amount_ton)
+#                     # информируем реферера о вознагрождении
+#                     await bot.send_message(chat_id=referer,
+#                                            text=f'Вам отправлено <strong>{amount_ton} TON</strong> за приглашенного пользователя'
+#                                                 f' @{await _get_username_from_id(user_to_pay)}',
+#                                            parse_mode='html')
+#                 elif transaction == 'not enough money':
+#                     for admin_id in config.tg_bot.admin_ids.split(','):
+#                         try:
+#                             await bot.send_message(chat_id=int(admin_id),
+#                                                    text=f'❗️Что-то пошло не так, и пользователю @{await _get_username_from_id(referer)}'
+#                                                         f' за приглашенного @{await _get_username_from_id(user_to_pay)} не пришло {amount_ton} TON,'
+#                                                         f' проверьте кошелек, скорее всего там недостаточно средств!')
+#                         except:
+#                             pass
+#                 elif transaction.startswith('error'):
+#                     for admin_id in config.tg_bot.admin_ids.split(','):
+#                         try:
+#                             await bot.send_message(chat_id=int(admin_id),
+#                                                    text=f'❗️Что-то пошло не так, и пользователю'
+#                                                         f' @{await _get_username_from_id(user_to_pay)} не пришло {amount_ton} TON,'
+#                                                         f' что-то пошло не так! Проверьте списание средств!')
+#                         except:
+#                             pass
+#         # пользователь уже получал вознаграждение по этой вакансии
+#         else:
+#             await callback.answer(text=f'Пользователь уже получил вознаграждение!',
+#                                   show_alert=True)
+#     except Exception as e:
+#         logging.error(f'ERROR: {e}')
+#     await callback.answer()
+#
+#
+# @router.callback_query(F.data.startswith('cancel_pay_'))
+# async def cancel_pay(callback: CallbackQuery, bot: Bot, state: FSMContext):
+#     """
+#     Отмена начисления вознаграждения
+#     """
+#     logging.info(f'cancel_pay: {callback.data.split("_")[-1]}')
+#     await callback.answer()
+#     # id телеграм пользователя запросившего начисление TON
+#     user_to_pay = int(callback.data.split('_')[-1])
+#     # обновляем статус пользователя в БД
+#     await update_status(user_to_pay, UserStatus.not_payed)
+#     # информируем админа
+#     await callback.message.answer(text=f'❌ Пользователю @{await _get_username_from_id(user_to_pay)} оплата'
+#                                        f' не отправлена',
+#                                   parse_mode='html')
+#     try:
+#         # информируем пользователя
+#         await bot.send_message(chat_id=user_to_pay,
+#                                text='Оплата была не одобрена администрацией')
+#     except:
+#         pass
+#     # обновляем статус анкеты в гугл-таблице
+#     update_status_anketa(status='❌', telegram_id=user_to_pay)

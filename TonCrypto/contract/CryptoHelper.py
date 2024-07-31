@@ -52,13 +52,17 @@ class BotWallet:
         deploy_message = query["message"].to_boc(False)
         await self.client.raw_send_message(deploy_message)
 
-    # Function to get seqno for transactions
+    # Возвращает порядковый номер транзакции в определенном кошельке. Этот метод в основном используется для защиты
+    # от повторного воспроизведения .
     async def _get_seqno(self):
-        data = await self.client.raw_run_method(method='seqno', stack_data=[], address=self.addr)
+        data = await self.client.raw_run_method(method='seqno',
+                                                stack_data=[],
+                                                address=self.addr)
         return int(data['stack'][0][1], 16)
 
     # Function to check balance for valid payment
     async def check_balance(self):
+        logging.info('check_balance')
         my_balance = (await self.client.raw_get_account_state(self.addr))['balance']
         if float(my_balance) - self.amount < 0:
             # print(float(my_balance), self.amount)
@@ -67,12 +71,14 @@ class BotWallet:
 
     # Function that checks the previous balance for comparison with the new one
     async def get_last_balances(self):
-        # await self.client.init() # for tests
+        logging.info(f'get_last_balances: dest_addr - {self.dest_addr}')
 
-        # getting balances
+        # получаем баланс в нанотонах на заказчика
         self.last_balance1 = from_nano(int((await self.client.raw_get_account_state(self.addr))['balance']), 'ton')
+        logging.info(f'last_balance1: {self.last_balance1}')
+        # получаем баланс на кошельке получателя
         self.last_balance2 = from_nano(int((await self.client.raw_get_account_state(self.dest_addr))['balance']), 'ton')
-
+        logging.info(f'last_balance2: {self.last_balance2}')
         # making them from nanocoins to coins
         return from_nano(int(self.last_balance1), 'ton'), from_nano(int(self.last_balance2), 'ton')
 
@@ -95,10 +101,12 @@ class BotWallet:
         """
         Перевод тонов
         """
+        logging.info(f'BotWallet.transfer: amount - {amount}, to_addr - {to_addr}')
         # Initialize a client
         await self.client.init()
 
-        # get seqno
+        # Возвращает порядковый номер транзакции в определенном кошельке.
+        # Этот метод в основном используется для защиты от повторного воспроизведения .
         seqno = await self._get_seqno()
 
         # Checking type of address
@@ -107,15 +115,17 @@ class BotWallet:
         else:
             return "wrong addr"
 
-        # maiking amount from coin to nanocoin
+        # Конвертируйте заданную сумму из указанной единицы в нанограммы, наименьшую единицу криптовалюты TON.
+        # logging.info(f'amount: {amount} type(amount): {type(amount)}')
         self.amount = to_nano(amount, 'ton')
-
+        # logging.info(f'amount_to_nano: {amount}')
         try:
-            # check that we have enough money
+            # проверка что, на кошельке достаточно для списания amount TON
+            # logging.info(f'check_balance(): {await self.check_balance()}')
             if await self.check_balance():
 
                 # getting last balances before transaction
-                await self.get_last_balances()
+                # await self.get_last_balances()
 
                 # make transaction query
                 transfer_query = self.wallet.create_transfer_message(to_addr=self.dest_addr,
@@ -130,7 +140,7 @@ class BotWallet:
                 ans = await self.client.raw_send_message(boc)
 
                 await asyncio.sleep(2)
-
+                print(ans)
                 # checking the result of transaction
                 if ans["@type"] != 'ok':
                     return ans

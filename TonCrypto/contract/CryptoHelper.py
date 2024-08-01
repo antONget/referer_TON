@@ -1,7 +1,7 @@
 import asyncio
 
 from pytonlib import TonlibClient
-from tonsdk.contract.wallet import Wallets
+from tonsdk.contract.wallet import Wallets, WalletVersionEnum
 
 from tonsdk.utils import to_nano, from_nano
 from tonsdk.boc import Cell
@@ -11,25 +11,23 @@ from pathlib import Path
 import logging
 from fake_useragent import UserAgent
 from config_data.config import Config, load_config
+
 config: Config = load_config()
+
+
 class BotWallet:
     def __init__(self):
-        # testnet
-        # self.mnemonics = ['plastic', 'middle', 'retire', 'parent', 'various', 'differ', 'bike', 'volume', 'morning',
-        #                   'crush', 'tell', 'motion', 'much', 'carbon', 'pitch', 'divorce', 'veteran', 'define',
-        #                   'prosper', 'toss', 'charge', 'amused', 'divorce', 'melt']
-        # self.addr = "kQATX9u9PdL3hU1LrjFQcUUBuOAO95tNCRA77HriftbH_l51"  # test addr
-        # self.url = 'https://ton.org/testnet-global.config.json'
 
         # uncommen to use mainnet
-        # self.mnemonics = ['dream', 'horse', 'reunion', 'crater', 'rocket', 'able', 'element', 'allow', 'picnic', 'material', 'deliver', 'hedgehog', 'monster', 'junk', 'garbage', 'honey', 'glare', 'milk', 'pizza', 'city', 'receive', 'horse', 'inside', 'online']
-        # self.addr = "EQA2v-pA4Nh0nmhD8Js1iAcZpq0qxFUZV5P1tnghj0YZfGGX" # bot real addr
-        # self.url = 'https://ton.org/global-config.json'
         self.mnemonics = config.tg_bot.mnemonics.split(',')
-        self.addr = "EQA2v-pA4Nh0nmhD8Js1iAcZpq0qxFUZV5P1tnghj0YZfGGX"  # bot real addr
+        self.addr = 'UQAUygHnpvBlLqpg40x7u6O5SNqHUTsNpz0LUoeV4oYL1-5e'
+
+        # self.mnemonics = config.tg_bot.mnemonics.split(',')
         self.url = 'https://ton.org/global-config.json'
+
         # Getting wallet from mnemonics
-        self.wallet = Wallets.from_mnemonics(mnemonics=self.mnemonics)[-1]
+        mnemonics, pub_k, priv_k, self.wallet = Wallets.from_mnemonics(mnemonics=self.mnemonics,
+                                                                       version=WalletVersionEnum.v4r2)
 
         self.amount = None
         self.config = requests.get(self.url).json()
@@ -39,9 +37,7 @@ class BotWallet:
         Path(self.keystore_dir).mkdir(parents=True, exist_ok=True)
 
         # make a client
-        self.client = TonlibClient(ls_index=14, config=self.config, keystore=self.keystore_dir, tonlib_timeout=30)
-
-        # for further work with transaction verification
+        self.client = TonlibClient(ls_index=4, config=self.config, keystore=self.keystore_dir, tonlib_timeout=30)
         self.last_balance1 = None
         self.last_balance2 = None
 
@@ -55,9 +51,12 @@ class BotWallet:
     # Возвращает порядковый номер транзакции в определенном кошельке. Этот метод в основном используется для защиты
     # от повторного воспроизведения .
     async def _get_seqno(self):
-        data = await self.client.raw_run_method(method='seqno',
-                                                stack_data=[],
-                                                address=self.addr)
+        # await self.client.init()
+
+        data = await self.client.raw_run_method(address=self.addr,
+                                                method='seqno',
+                                                stack_data=[]
+                                                )
         return int(data['stack'][0][1], 16)
 
     # Function to check balance for valid payment
@@ -82,13 +81,12 @@ class BotWallet:
         self.last_balance1 = int((last_b1)['balance'])
         logging.info(f'last_balance1: {self.last_balance1}')
 
-
         # получаем баланс на кошельке получателя
         last_b2 = await self.client.raw_get_account_state(self.dest_addr)
         self.last_balance2 = int((last_b2)['balance'])
         logging.info(f'last_balance2: {self.last_balance2}')
-        
-        return 
+        print(last_b1, last_b2)
+        return
 
     async def is_success(self, amount: int | float):
         # await self.client.init() # for test
@@ -113,7 +111,7 @@ class BotWallet:
         logging.info(f'BotWallet.transfer: amount - {amount}, to_addr - {to_addr}')
         # Initialize a client
         await self.client.init()
-
+        # await self.client.sync_tonlib()
         # Возвращает порядковый номер транзакции в определенном кошельке.
         # Этот метод в основном используется для защиты от повторного воспроизведения .
         seqno = await self._get_seqno()
@@ -138,8 +136,8 @@ class BotWallet:
 
             # make transaction query
             transfer_query = self.wallet.create_transfer_message(to_addr=self.dest_addr,
-                                                                    amount=self.amount,
-                                                                    seqno=seqno)
+                                                                 amount=self.amount,
+                                                                 seqno=seqno)
             # getting boc data
             boc: Cell = transfer_query['message'].to_boc(False)
 

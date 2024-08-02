@@ -1,3 +1,5 @@
+import asyncio
+
 from services.googlesheets import get_list_all_anketa, get_list_anketa, update_status_anketa
 from keyboards.keybord_scheduler import keyboards_confirm_pay
 
@@ -80,6 +82,7 @@ async def send_ton(bot: Bot):
                                                     f' совершивших целевое действие для начисления вознаграждения!')
                     except:
                         pass
+        await asyncio.sleep(60)
         # обработка целевого действия совершенного пользователем, получаем подтверждение от админа о
         # начислении вознаграждения
         # получаем список администраторов

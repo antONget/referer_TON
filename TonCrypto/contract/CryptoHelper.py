@@ -85,7 +85,7 @@ class BotWallet:
         last_b2 = await self.client.raw_get_account_state(self.dest_addr)
         self.last_balance2 = int((last_b2)['balance'])
         logging.info(f'last_balance2: {self.last_balance2}')
-        print(last_b1, last_b2)
+        # print(last_b1, last_b2)
         return
 
     async def is_success(self, amount: int | float):

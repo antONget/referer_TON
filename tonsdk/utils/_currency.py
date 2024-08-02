@@ -73,17 +73,17 @@ def to_nano(number: Union[int, float, str, decimal.Decimal], unit: str) -> int:
     if d_number < 1 and "." in s_number:
         with decimal.localcontext() as ctx:
             multiplier = len(s_number) - s_number.index(".") - 1
-            print("multiplier", multiplier)
+            # print("multiplier", multiplier)
             ctx.prec = multiplier
             d_number = decimal.Decimal(
                 value=number, context=ctx) * 10 ** multiplier
         unit_value /= 10 ** multiplier
-    print("d_number decimal.localcontext", d_number)
+    # print("d_number decimal.localcontext", d_number)
     with decimal.localcontext() as ctx:
         ctx.prec = 999
         result_value = decimal.Decimal(
             value=d_number, context=ctx) * unit_value
-    print("result_value", result_value)
+    # print("result_value", result_value)
     if result_value < MIN_VAL or result_value > MAX_VAL:
         raise ValueError(
             "Resulting nanoton value must be between 1 and 2**256 - 1")
@@ -120,7 +120,7 @@ def from_nano(number: int, unit: str) -> Union[int, decimal.Decimal]:
     # MIN_VAL = 0
     # MAX_VAL = 2 ** 256 - 1
     if number < MIN_VAL or number > MAX_VAL:
-        print("number", number, "number < MIN_VAL", number < MIN_VAL, "number > MAX_VAL", number > MAX_VAL)
+        # print("number", number, "number < MIN_VAL", number < MIN_VAL, "number > MAX_VAL", number > MAX_VAL)
         raise ValueError("value must be between 1 and 2**256 - 1")
 
     unit_value = units[unit.lower()]

@@ -156,8 +156,8 @@ async def user_subscription(message: Message | CallbackQuery):
                     f'2. Чтобы пригласить друга создайте реферальную ссылку, отправьте ее другу и укажите адрес'
                     f' своего кошелька (инструкция по открытию кошелька в «Личном кабинете»).\n\n'
                     f'Вознаграждение в TON производится на электронный кошелек после первого месяца работы.',
-            reply_markup=keyboards_main()
-        )
+            reply_markup=keyboards_main(),
+            parse_mode='html')
     else:
         await message.answer_photo(
             photo='AgACAgIAAxkBAAINSWaieYcjePwjwQiprPXvjuUAAUQpMQAC4d4xG_w4GEncY55Kk2uk_gEAAwIAA3kAAzUE',
@@ -173,8 +173,8 @@ async def user_subscription(message: Message | CallbackQuery):
                     f'2. Чтобы пригласить друга создайте реферальную ссылку, отправьте ее другу и укажите адрес'
                     f' своего кошелька (инструкция по открытию кошелька в «Личном кабинете»).\n\n'
                     f'Вознаграждение в TON производится на электронный кошелек после первого месяца работы.',
-            reply_markup=keyboards_main()
-        )
+            reply_markup=keyboards_main(),
+            parse_mose='html')
 
 
 @router.message(F.text == 'Главное меню')
@@ -197,7 +197,8 @@ async def press_main_menu(message: Message):
                 f'2. Чтобы пригласить друга создайте реферальную ссылку, отправьте ее другу и укажите адрес'
                 f' своего кошелька (инструкция по открытию кошелька в «Личном кабинете»).\n\n'
                 f'Вознаграждение в TON производится на электронный кошелек после первого месяца работы.',
-        reply_markup=keyboards_main())
+        reply_markup=keyboards_main(),
+        parse_mode='html')
 
 
 @router.message(F.text == 'Личный кабинет')

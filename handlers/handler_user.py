@@ -578,8 +578,8 @@ async def confirm_anketa(callback: CallbackQuery, state: FSMContext, bot: Bot):
                               show_alert=True)
         # обновляем статус пользователя на 'on_work
         await update_status(callback.from_user.id, UserStatus.on_work)
-        await callback.message.answer(text='Благодарим за заполнение анкеты! \n\n'
-                                           'Начисление TON  произведется по окончанию первого месяца работы.')
+        await callback.message.answer(text='Благодарим за заполнение анкеты!\n\n'
+                                           'Наш специалист свяжется с Вами в ближайшее время.')
         # await callback.message.answer(text='Для оперативного начисления TON после месяца работы нажми на кнопку'
         #                                    ' "Хочу TON"',
         #                               reply_markup=on_work(id_anketa=id_anketa))

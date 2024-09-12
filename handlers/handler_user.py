@@ -11,7 +11,7 @@ from aiogram.fsm.state import State, StatesGroup, default_state
 from config_data.config import Config, load_config
 from database.requests import add_user, get_balance, get_referral_users, get_referral_link, \
     add_referral_user, _get_username_from_id, get_user_from_id, increase_ton_balance, update_status, UserStatus,\
-    get_user_ton_addr_by_id, update_user_ton_addr
+    get_user_ton_addr_by_id, update_user_ton_addr, update_referer_id
 from keyboards.keyboard_user import keyboards_subscription, keyboards_main, yes_or_no, on_work, confirm, yes_or_no_addr,\
     pass_the_state, keyboards_get_contact, keyboard_confirm_phone, keyboard_cancel, keyboard_vacancy, \
     keyboard_confirm_cantact_date, pass_the_state_menu, keyboards_main_second
@@ -90,9 +90,12 @@ async def process_start_command_user(message: Message, command: CommandObject, b
         await bot.send_message(chat_id=referrer_id,
                                text=f'По вашей реферальной ссылке запустил бота пользователь:'
                                     f'{message.from_user.id} / @{message.from_user.username}')
-        if not await get_user_from_id(user_id=message.from_user.id):
+        user = await get_user_from_id(user_id=message.chat.id)
+        # если пользователя еще нет в БД
+        if not user:
+            # добавляем в список рефералов
             await add_referral_user(main_user_id=referrer_id, referral_user_id=message.from_user.id)
-
+            # создаем реферальную ссылку
             link = await create_start_link(bot=bot, payload=str(message.from_user.id), encode=True)
             if message.from_user.username:
                 await add_user(
@@ -102,12 +105,14 @@ async def process_start_command_user(message: Message, command: CommandObject, b
                 await add_user(
                     {"id": message.from_user.id, "username": f"None-{message.from_user.id}", "referral_link": link,
                      "referer_id": referrer_id})
-            await user_subscription(message)
+        # если пользователь ранее зарегистрировался в БД без реферальной ссылки
+        elif user and user.referer_id == 0:
+            await update_referer_id(user_id=message.chat.id, referer_id=referrer_id)
+        # если пользователь уже в БД и перешел по другой реферальной ссылке
         else:
-            user = await get_user_from_id(user_id=message.chat.id)
             if user.referer_id != referrer_id:
                 await message.answer('Вас может пригласить только один человек!')
-            await user_subscription(message)
+    # если пользователь перешел без реферальной ссылки
     else:
         link = await create_start_link(bot=bot, payload=str(message.from_user.id), encode=True)
         if message.from_user.username:
@@ -116,7 +121,7 @@ async def process_start_command_user(message: Message, command: CommandObject, b
         else:
             await add_user({"id": message.from_user.id, "username": f"None-{message.from_user.id}",
                             "referral_link": link, "status": 'None'})
-        await user_subscription(message)
+    await user_subscription(message)
 
 
 @router.callback_query(ChannelProtect(), F.data == 'subscription')
@@ -148,9 +153,12 @@ async def user_subscription(message: Message | CallbackQuery):
                     f'Это бот канала ShopTalk — Работа и Вакансии.\n\n'
                     f'<b>Здесь вы сможете:</b>\n'
                     f'✔️ заполнить анкету на вакансию;\n'
-                    f'✔️ скопировать свою реферальную ссылку и пригласить по ней друга;\n'
+                    f'✔️ получить вознаграждение за приведенного друга;\n'
                     f'✔️ посмотреть список приглашенных друзей;\n'
                     f'✔️ узнать свой баланс TON.\n\n'
+                    f'<b>Заполнить анкету на вакансию:</b>\n'
+                    f'Если Вам понравилась вакансия и Вы хотите записаться на собеседование, то заполняйте анкету'
+                    f' и мы свяжемся с Вами в ближайшее время!\n\n'
                     f'<b>Реферальная программа:</b>\n'
                     f'1. Если Вас пригласили — выбирайте вакансию, заполняйте анкету и выходите на работу.\n'
                     f'2. Чтобы пригласить друга создайте реферальную ссылку, отправьте ее другу и укажите адрес'
@@ -165,9 +173,12 @@ async def user_subscription(message: Message | CallbackQuery):
                     f'Это бот канала ShopTalk — Работа и Вакансии.\n\n'
                     f'<b>Здесь вы сможете:</b>\n'
                     f'✔️ заполнить анкету на вакансию;\n'
-                    f'✔️ скопировать свою реферальную ссылку и пригласить по ней друга;\n'
+                    f'✔️ получить вознаграждение за приведенного друга;\n'
                     f'✔️ посмотреть список приглашенных друзей;\n'
                     f'✔️ узнать свой баланс TON.\n\n'
+                    f'<b>Заполнить анкету на вакансию:</b>\n'
+                    f'Если Вам понравилась вакансия и Вы хотите записаться на собеседование, то заполняйте анкету'
+                    f' и мы свяжемся с Вами в ближайшее время!\n\n'
                     f'<b>Реферальная программа:</b>\n'
                     f'1. Если Вас пригласили — выбирайте вакансию, заполняйте анкету и выходите на работу.\n'
                     f'2. Чтобы пригласить друга создайте реферальную ссылку, отправьте ее другу и укажите адрес'
@@ -189,9 +200,12 @@ async def press_main_menu(message: Message):
                 f'Это бот канала ShopTalk — Работа и Вакансии.\n\n'
                 f'<b>Здесь вы сможете:</b>\n'
                 f'✔️ заполнить анкету на вакансию;\n'
-                f'✔️ скопировать свою реферальную ссылку и пригласить по ней друга;\n'
+                f'✔️ получить вознаграждение за приведенного друга;\n'
                 f'✔️ посмотреть список приглашенных друзей;\n'
                 f'✔️ узнать свой баланс TON.\n\n'
+                f'<b>Заполнить анкету на вакансию:</b>\n'
+                f'Если Вам понравилась вакансия и Вы хотите записаться на собеседование, то заполняйте анкету'
+                f' и мы свяжемся с Вами в ближайшее время!\n\n'
                 f'<b>Реферальная программа:</b>\n'
                 f'1. Если Вас пригласили — выбирайте вакансию, заполняйте анкету и выходите на работу.\n'
                 f'2. Чтобы пригласить друга создайте реферальную ссылку, отправьте ее другу и укажите адрес'
@@ -201,7 +215,7 @@ async def press_main_menu(message: Message):
         parse_mode='html')
 
 
-@router.message(F.text == 'Личный кабинет')
+@router.message(F.text == 'Реферальная система')
 async def press_personal(message: Message, state: FSMContext):
     """
     Мой кабинет
@@ -217,13 +231,39 @@ async def press_my_wallet(message: Message, state: FSMContext):
     Ввод адреса кошелька
     """
     logging.info(f'press_my_wallet: {message.from_user.id}')
-    await message.answer(text=f'Отправьте адрес вашего электронного кошелька для вознаграждения.\n\n'
-                              f'Используйте реферальную программу и получайте TON за приглашенных друзей.\n\n'
-                              f'Видео-инструкция по созданию кошелька в «Как создать кошелек?»\n'
-                              f'Бот для создания кошелька — @wallet.\n\n'
-                              f'/cancel для отмены',
-                         reply_markup=pass_the_state_menu())
-    await state.set_state(UserAnketa.address_menu)
+    await message.answer(text="Хотите изменить",
+                         reply_markup=yes_or_no_addr())
+
+
+@router.callback_query(F.data.startswith('address_'))
+async def create_wallet(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """Видео-инструкция по созданию кошелька"""
+    logging.info(f'create_wallet: {callback.message.from_user.id}')
+    answer = callback.data.split('_')[1]
+    if answer == 'confirm':
+        await callback.message.edit_text(text=f'Отправьте адрес вашего электронного кошелька для вознаграждения.\n\n'
+                                              f'Используйте реферальную программу и получайте TON за приглашенных'
+                                              f' друзей.\n\n'
+                                              f'Видео-инструкция по созданию кошелька в «Как создать кошелек?»\n'
+                                              f'Бот для создания кошелька — @wallet.\n\n'
+                                              f'/cancel для отмены',
+                                         reply_markup=pass_the_state_menu())
+        await state.set_state(UserAnketa.address_menu)
+    elif answer == 'cancel':
+        await bot.delete_message(chat_id=callback.message.chat.id,
+                                 message_id=callback.message.message_id)
+        await state.set_state(default_state)
+    await callback.answer()
+
+
+@router.callback_query(F.data == 'create_wallet')
+async def create_wallet(callback: CallbackQuery, bot: Bot):
+    """Видео-инструкция по созданию кошелька"""
+    logging.info(f'create_wallet: {callback.message.from_user.id}')
+    await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
+    await callback.message.answer_video(video='BAACAgIAAxkBAAIG-mZ1D3n8x06fBosGaw290DPk6R91AAJlRwACuTmwS3Ys7U1g_Pa3NQQ',
+                                        caption='Создайте кошелек по видео инструкции')
+    await callback.answer()
 
 
 @router.message(UserAnketa.address_menu)
@@ -280,9 +320,6 @@ async def get_list_referrals(message: Message):
             await message.answer(msg)
     else:
         await message.answer(text='В вашем списке никого нет!')
-
-
-
 
 
 @router.message(Command('cancel'))
@@ -425,18 +462,10 @@ async def get_city(message: Message, state: FSMContext):
 #                          reply_markup=pass_the_state())
 #     await state.set_state(UserAnketa.address)
 
-#
-# @router.callback_query(F.data == 'create_wallet')
-# async def create_wallet(callback: CallbackQuery, state: FSMContext, bot: Bot):
-#     """Видео-инструкция по созданию кошелька"""
-#     logging.info(f'create_wallet: {callback.message.from_user.id}')
-#     await bot.delete_message(chat_id=callback.message.chat.id, message_id=callback.message.message_id)
-#     await callback.message.answer_video(video='BAACAgIAAxkBAAIG-mZ1D3n8x06fBosGaw290DPk6R91AAJlRwACuTmwS3Ys7U1g_Pa3NQQ',
-#                                         caption='Создайте кошелек по видео инструкции')
-#     await asyncio.sleep(5)
-#     await make_anketa_(message=callback.message, state=state)
-#
-#
+
+
+
+
 # @router.callback_query(F.data == 'pass_wallet')
 # async def pass_state(callback: CallbackQuery, state: FSMContext):
 #     """Пропустить ввод номера кошелька. Запрос на ссылку на вакансию"""

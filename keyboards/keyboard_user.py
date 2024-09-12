@@ -24,7 +24,7 @@ def keyboards_subscription():
 def keyboards_main() -> ReplyKeyboardMarkup:
     logging.info("keyboards_main")
     button_1 = KeyboardButton(text='Заполнить анкету на вакансию')
-    button_2 = KeyboardButton(text='Личный кабинет')
+    button_2 = KeyboardButton(text='Реферальная система')
     keyboard = ReplyKeyboardMarkup(
         keyboard=[[button_1], [button_2]],
         resize_keyboard=True

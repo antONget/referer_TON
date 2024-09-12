@@ -224,3 +224,10 @@ async def update_user_ton_addr(user_id: int, user_addr: str):
             user.crypto_ton_addr = user_addr
             await session.commit()
 
+
+async def update_referer_id(user_id: int, referer_id: int):
+    async with async_session() as session:
+        user: User = await session.scalar(select(User).where(User.id == user_id))
+        if user:
+            user.referer_id = referer_id
+            await session.commit()

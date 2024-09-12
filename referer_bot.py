@@ -1,6 +1,8 @@
 import asyncio
 import logging
-
+import traceback
+from aiogram.types import FSInputFile
+from aiogram.types import ErrorEvent
 from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
 from handlers import handler_user, handler_scheduler, other_handlers
@@ -40,6 +42,18 @@ async def main():
     dp.include_router(handler_scheduler.router)
     dp.include_router(other_handlers.router)
 
+
+    @dp.error()
+    async def error_handler(event: ErrorEvent):
+        logger.critical("Критическая ошибка: %s", event.exception, exc_info=True)
+        await bot.send_message(chat_id=843554518,
+                               text=f'{event.exception}')
+        formatted_lines = traceback.format_exc()
+        text_file = open('error.txt', 'w')
+        text_file.write(str(formatted_lines))
+        text_file.close()
+        await bot.send_document(chat_id=843554518,
+                                document=FSInputFile('error.txt'))
     # Пропускаем накопившиеся update и запускаем polling
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)

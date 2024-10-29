@@ -167,7 +167,7 @@ async def user_subscription(message: Message | CallbackQuery):
             reply_markup=keyboards_main(),
             parse_mode='html')
     else:
-        await message.answer_photo(
+        await message.message.answer_photo(
             photo='AgACAgIAAxkBAAINSWaieYcjePwjwQiprPXvjuUAAUQpMQAC4d4xG_w4GEncY55Kk2uk_gEAAwIAA3kAAzUE',
             caption=f'Привет! 👋\n'
                     f'Это бот канала ShopTalk — Работа и Вакансии.\n\n'

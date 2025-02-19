@@ -299,7 +299,10 @@ async def get_link_ref(message: Message):
     logging.info(f'get_link_referal: {message.chat.id}')
     link = await get_referral_link(message.from_user.id)
     await message.answer(text=f'Ваша реферальная ссылка:\n'
-                              f'{link}')
+                              f'{link}\n\n'
+                              f'Вам необходимо отправить эту ссылку другу,'
+                              f' а он должен по ней перейти и заполнить анкету. '
+                              f'После первого месяца работы друга — Вам начислится денежное вознаграждение.')
 
 
 @router.message(F.text == 'Список рефералов')

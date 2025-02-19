@@ -1,9 +1,9 @@
-referer_bot.py:25 #INFO     [2024-06-15 13:01:08,582] - __main__ - Starting bot
-base.py:454 #INFO     [2024-06-15 13:01:08,609] - apscheduler.scheduler - Adding job tentatively -- it will be properly scheduled when the scheduler starts
-base.py:895 #INFO     [2024-06-15 13:01:08,610] - apscheduler.scheduler - Added job "send_ton" to job store "default"
-base.py:181 #INFO     [2024-06-15 13:01:08,610] - apscheduler.scheduler - Scheduler started
-dispatcher.py:527 #INFO     [2024-06-15 13:01:08,757] - aiogram.dispatcher - Start polling
-dispatcher.py:341 #INFO     [2024-06-15 13:01:08,799] - aiogram.dispatcher - Run polling for bot @RetailNavigator_Bot id=7396219007 - 'Бот Ритейл Навигатор'
-dispatcher.py:455 #WARNING  [2024-06-15 13:01:11,286] - aiogram.dispatcher - Received SIGINT signal
-dispatcher.py:359 #INFO     [2024-06-15 13:01:11,286] - aiogram.dispatcher - Polling stopped for bot @RetailNavigator_Bot id=7396219007 - 'Бот Ритейл Навигатор'
-dispatcher.py:554 #INFO     [2024-06-15 13:01:11,286] - aiogram.dispatcher - Polling stopped
+referer_bot.py:25 #INFO     [2024-07-31 09:55:19,104] - __main__ - Starting bot
+base.py:454 #INFO     [2024-07-31 09:55:19,121] - apscheduler.scheduler - Adding job tentatively -- it will be properly scheduled when the scheduler starts
+base.py:895 #INFO     [2024-07-31 09:55:19,121] - apscheduler.scheduler - Added job "send_ton" to job store "default"
+base.py:181 #INFO     [2024-07-31 09:55:19,121] - apscheduler.scheduler - Scheduler started
+dispatcher.py:527 #INFO     [2024-07-31 09:55:19,252] - aiogram.dispatcher - Start polling
+dispatcher.py:341 #INFO     [2024-07-31 09:55:19,296] - aiogram.dispatcher - Run polling for bot @RetailNavigator_Bot id=7396219007 - 'Бот Ритейл Навигатор'
+dispatcher.py:455 #WARNING  [2024-07-31 09:55:21,921] - aiogram.dispatcher - Received SIGINT signal
+dispatcher.py:359 #INFO     [2024-07-31 09:55:21,922] - aiogram.dispatcher - Polling stopped for bot @RetailNavigator_Bot id=7396219007 - 'Бот Ритейл Навигатор'
+dispatcher.py:554 #INFO     [2024-07-31 09:55:21,922] - aiogram.dispatcher - Polling stopped

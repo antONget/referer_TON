@@ -112,3 +112,5 @@ async def send_ton(bot: Bot):
                 except:
                     pass
 
+if __name__ == '__main__':
+    asyncio.run(send_ton())
